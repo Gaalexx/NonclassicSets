@@ -1,5 +1,8 @@
 package com.gaalex.mathcore
 
+
+const val EPSILON = 0.0000000001
+
 fun main(){
     println(
         BisectionSolver.solve(
