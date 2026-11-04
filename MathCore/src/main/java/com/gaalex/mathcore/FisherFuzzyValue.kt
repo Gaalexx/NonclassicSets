@@ -1,119 +1,100 @@
 package com.gaalex.mathcore
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlin.math.exp
+import kotlin.math.expm1
 import kotlin.math.ln
 import kotlin.math.ln1p
 
 interface FuzzyValue {
-    val defaultEpsilon: Double
-    val defaultMaxIterations: Int
     fun membership(x: Double): Double
-    fun alphaCut(
-        alpha: Double, epsilon: Double = defaultEpsilon, maxIterations: Int = defaultMaxIterations
-    ): Interval?
+    suspend fun alphaCut(alpha: Double): Interval
 }
 
 class FisherFuzzyValue(
     val parameters: FisherParameters,
+    private val solver: EquationSolver,
+    private val settings: SolverSettings = solver.defaultSettings,
+    private val maxBracketExpansions: Int = 100,
 ) : FuzzyValue {
-
-    companion object {
-        const val MAX_ITERATIONS = 100
-        const val THIS_EPSILON = EPSILON
+    init {
+        require(maxBracketExpansions > 0) { "maxBracketExpansions must be positive" }
     }
-
-    override val defaultEpsilon: Double
-        get() = THIS_EPSILON
-
-
-    override val defaultMaxIterations: Int
-        get() = MAX_ITERATIONS
 
     override fun membership(x: Double): Double {
-        if (x.isNaN() || x.isInfinite()) {
-            throw ArithmeticException("x must be a number!")
-        }
+        require(x.isFinite()) { "x must be finite" }
+        val mode = parameters.mode
+        if (x < 0.0) return 0.0
+        if (x == mode) return 1.0
+        if (x == 0.0) return 0.0
 
-        return if (x <= 0) {
-            0.0
+        val logMembership = if (parameters.k1 == 2.0) {
+            -(1.0 + parameters.k2 / 2.0) * ln1p(x)
         } else {
-            exp(
-                (parameters.k1 / 2.0 - 1.0) * (ln(x) - ln(parameters.mode)) - (parameters.k1 / 2.0 + parameters.k2 / 2.0) * (ln1p(
-                    x
-                ) - ln1p(parameters.mode))
-            )
+            (parameters.k1 / 2.0 - 1.0) * (ln(x) - ln(mode)) - (parameters.k1 / 2.0 + parameters.k2 / 2.0) * (ln1p(
+                x
+            ) - ln1p(mode))
         }
+        if (logMembership.isNaN() || logMembership > 1e-12) {
+            throw ArithmeticException("Cannot compute membership at x=$x")
+        }
+        return exp(logMembership.coerceAtMost(0.0))
     }
 
-    private fun getBorder(
-        alpha: Double,
-        borderChange: (Double) -> Double = { it -> it * 2 },
-        maxIteration: Int = defaultMaxIterations
-    ): Double {
-        var rightBorder: Double = maxOf(1.0, parameters.mode * 2.0)
-        var iteration = 0
-        while (membership(rightBorder) > alpha || iteration < maxIteration) {
-            rightBorder = borderChange(rightBorder)
-            iteration++
+    private suspend fun rightBracket(alpha: Double): Double {
+        var upper = maxOf(1.0, 2.0 * parameters.mode)
+        if (!upper.isFinite() || upper <= parameters.mode) {
+            throw ArithmeticException("Cannot represent the initial right bracket")
         }
 
-        check(iteration < maxIteration) {
-            "Could not have found right border for $maxIteration iterations"
+        var expansions = 0
+        while (membership(upper) > alpha) {
+            currentCoroutineContext().ensureActive()
+            if (expansions >= maxBracketExpansions) {
+                throw ArithmeticException("Cannot bracket alpha=$alpha in $maxBracketExpansions expansions")
+            }
+            val next = upper * 2.0
+            if (!next.isFinite() || next <= upper) {
+                throw ArithmeticException("Right bracket overflow for alpha=$alpha")
+            }
+            upper = next
+            expansions++
         }
-        return rightBorder
+        return upper
     }
 
-    private suspend fun getIntervalOfAlpha(
-        alpha: Double, epsilon: Double = defaultEpsilon, maxIterations: Int = defaultMaxIterations
-    ): Interval? = supervisorScope {
-        val f = { x: Double -> membership(x) - alpha }
+    override suspend fun alphaCut(alpha: Double): Interval {
+        require(alpha.isFinite() && alpha > 0.0 && alpha <= 1.0) {
+            "alpha must be finite and in (0, 1]"
+        }
+        if (alpha == 1.0) return Interval(parameters.mode, parameters.mode)
 
-
-        val left = async {
-            BisectionSolver.solve(
-                f, Interval(0.0, parameters.mode), tolerance = epsilon, maxIteration = maxIterations
-            )
+        if (parameters.k1 == 2.0) {
+            val right = expm1(-ln(alpha) / (1.0 + parameters.k2 / 2.0))
+            if (!right.isFinite() || right <= 0.0) {
+                throw ArithmeticException("Cannot represent the positive right boundary for alpha=$alpha")
+            }
+            return Interval(0.0, right)
         }
 
-        val right = async {
-            BisectionSolver.solve(
-                f, Interval(
-                    parameters.mode, getBorder(alpha, maxIteration = maxIterations)
-                ), tolerance = epsilon, maxIteration = maxIterations
-            )
+        return coroutineScope {
+            val function = { x: Double ->
+                coroutineContext.ensureActive()
+                membership(x) - alpha
+            }
+            val left = async(Dispatchers.Default) {
+                solver.solve(function, Interval(0.0, parameters.mode), settings)
+            }
+            val right = async(Dispatchers.Default) {
+                val upper = rightBracket(alpha)
+                solver.solve(function, Interval(parameters.mode, upper), settings)
+            }
+
+            Interval(left.await(), right.await())
         }
-
-        val leftB = left.await()
-        val rightB = try {
-            right.await()
-        } catch (e: Exception) {
-            return@supervisorScope null
-        }
-        return@supervisorScope Interval(leftB, rightB)
-    }
-
-
-    override fun alphaCut(alpha: Double, epsilon: Double, maxIterations: Int): Interval? {
-        require(alpha > 0 && alpha <= 1)
-
-        if (alpha in 1.0 - epsilon..1.0 + epsilon) {
-            return Interval(parameters.mode, parameters.mode)
-        }
-
-
-        val scope = CoroutineScope(Dispatchers.Default)
-        var answer: Interval? = null
-        scope.launch {
-            answer = getIntervalOfAlpha(
-                alpha = alpha, epsilon = epsilon, maxIterations = maxIterations
-            )
-        }
-
-        return answer
     }
 }
