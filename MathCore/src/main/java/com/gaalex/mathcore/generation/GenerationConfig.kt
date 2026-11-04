@@ -1,4 +1,4 @@
-package com.gaalex.mathcore
+package com.gaalex.mathcore.generation
 
 data class GenerationConfig(
     val count: Int,

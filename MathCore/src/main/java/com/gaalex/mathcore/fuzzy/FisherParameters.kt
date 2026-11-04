@@ -1,4 +1,4 @@
-package com.gaalex.mathcore
+package com.gaalex.mathcore.fuzzy
 
 data class FisherParameters(
     val k1: Double,

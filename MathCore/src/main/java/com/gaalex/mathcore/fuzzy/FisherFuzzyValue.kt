@@ -1,5 +1,8 @@
-package com.gaalex.mathcore
+package com.gaalex.mathcore.fuzzy
 
+import com.gaalex.mathcore.interval.Interval
+import com.gaalex.mathcore.solver.EquationSolver
+import com.gaalex.mathcore.solver.SolverSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -9,11 +12,6 @@ import kotlin.math.exp
 import kotlin.math.expm1
 import kotlin.math.ln
 import kotlin.math.ln1p
-
-interface FuzzyValue {
-    fun membership(x: Double): Double
-    suspend fun alphaCut(alpha: Double): Interval
-}
 
 class FisherFuzzyValue(
     val parameters: FisherParameters,

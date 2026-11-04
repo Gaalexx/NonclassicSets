@@ -1,4 +1,4 @@
-package com.gaalex.mathcore
+package com.gaalex.mathcore.interval
 
 data class Interval(
     val left: Double,

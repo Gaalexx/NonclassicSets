@@ -1,5 +1,6 @@
-package com.gaalex.mathcore
+package com.gaalex.mathcore.generation
 
+import com.gaalex.mathcore.fuzzy.FisherParameters
 import kotlin.random.Random
 
 class FisherFuzzyDatasetGenerator : FisherDatasetGenerator {
