@@ -1,6 +1,7 @@
 package com.gaalex.mathcore.fuzzy
 
 import com.gaalex.mathcore.interval.Interval
+import com.gaalex.mathcore.solver.BisectionSolver
 import com.gaalex.mathcore.solver.EquationSolver
 import com.gaalex.mathcore.solver.SolverSettings
 import kotlinx.coroutines.Dispatchers
@@ -13,14 +14,51 @@ import kotlin.math.expm1
 import kotlin.math.ln
 import kotlin.math.ln1p
 
+
+fun String.toFisherFuzzyValue(): FisherFuzzyValue {
+    return FisherFuzzyValue.parse(this)
+}
+
+fun String.toFisherFuzzyValueOrNull(): FisherFuzzyValue? {
+    return FisherFuzzyValue.parseOrNull(this)
+}
+
 class FisherFuzzyValue(
     val parameters: FisherParameters,
-    private val solver: EquationSolver,
+    private val solver: EquationSolver = BisectionSolver,
     private val settings: SolverSettings = solver.defaultSettings,
     private val maxBracketExpansions: Int = 100,
 ) : FuzzyValue {
     init {
         require(maxBracketExpansions > 0) { "maxBracketExpansions must be positive" }
+    }
+
+    override fun toString(): String {
+        return "(Z Fisher) | f_[k1 = ${parameters.k1}; k2 = ${parameters.k2}](x)"
+    }
+
+    companion object {
+        private val FISHER_REGEX = Regex(
+            """\(Z Fisher\)\s*\|\s*f_\[\s*k1\s*=\s*([^;\]]+?)\s*;\s*k2\s*=\s*([^\]]+?)\s*\]\(x\)"""
+        )
+
+        fun parse(s: String): FisherFuzzyValue {
+            val (k1Str, k2Str) = FISHER_REGEX.matchEntire(s.trim())?.destructured
+                ?: error("Wrong string format: $s")
+
+            val k1 = k1Str.toDoubleOrNull() ?: error("k1 is not a number: '$k1Str'")
+            val k2 = k2Str.toDoubleOrNull() ?: error("k2 is not a number: '$k2Str'")
+
+            return FisherFuzzyValue(parameters = FisherParameters(k1 = k1, k2 = k2))
+        }
+
+        fun parseOrNull(s: String): FisherFuzzyValue? {
+            return try {
+                parse(s)
+            } catch (e: Exception) {
+                null
+            }
+        }
     }
 
     override fun membership(x: Double): Double {
