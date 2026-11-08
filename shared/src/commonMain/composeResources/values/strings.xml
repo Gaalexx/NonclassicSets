@@ -1,0 +1,120 @@
+<resources>
+    <string name="app_mark">μ</string>
+
+    <string name="cancel">Отмена</string>
+    <string name="close">Закрыть</string>
+    <string name="unknown_error">Неизвестная ошибка</string>
+
+    <string name="working_set_title">Нечёткие величины</string>
+    <string name="import_button">Импортировать</string>
+    <string name="generate_button">Сгенерировать</string>
+    <string name="add_button">+ Добавить</string>
+
+    <string name="current_set">Текущий набор</string>
+    <string name="column_id">ID</string>
+    <string name="column_name">Название</string>
+    <string name="column_k1">k₁</string>
+    <string name="column_k2">k₂</string>
+    <string name="column_cut">α-срез при %1$s</string>
+    <string name="column_cut_unknown">α-срез</string>
+    <string name="row_menu">⋯</string>
+    <string name="row_delete">Удалить</string>
+    <string name="cut_not_computed">—</string>
+
+    <string name="preview_parameters">k₁ = %1$s     k₂ = %2$s</string>
+    <string name="max_membership">Максимум принадлежности</string>
+    <string name="max_membership_value">μ(%1$s) = 1</string>
+    <string name="cut_at_alpha">α-срез при α = %1$s</string>
+    <string name="alpha_line">α = %1$s</string>
+    <string name="axis_mu">μ(x)</string>
+    <string name="axis_x">x</string>
+
+    <string name="empty_title">В наборе пока нет величин</string>
+    <string name="empty_generate">Сгенерировать набор</string>
+
+    <string name="clustering_title">Кластеризация</string>
+    <string name="alpha_level">Уровень α</string>
+    <string name="stop_merging">Остановить объединение</string>
+    <string name="by_threshold">По порогу ε</string>
+    <string name="by_count">По числу</string>
+    <string name="epsilon_field">Порог расстояния ε</string>
+    <string name="count_field">Число кластеров</string>
+    <string name="cluster_button">Кластеризовать</string>
+
+    <string name="error_alpha">Введи число: 0 &lt; α ≤ 1.</string>
+    <string name="error_epsilon">Введи число: ε ≥ 0.</string>
+    <string name="error_count">Введи целое число от 1 до %1$d.</string>
+    <string name="error_cuts">Не удалось посчитать α-срезы для этого α.</string>
+    <string name="error_clustering">Не удалось выполнить кластеризацию.</string>
+
+    <string name="result_title">Результат кластеризации</string>
+    <string name="membership_functions">Функции принадлежности</string>
+    <string name="cluster_chip">Кластер %1$d · %2$s</string>
+    <string name="alpha_cuts">α-срезы</string>
+    <string name="summary">Сводка</string>
+    <string name="summary_alpha">Уровень α</string>
+    <string name="summary_epsilon">Порог ε</string>
+    <string name="summary_count">Число кластеров</string>
+    <string name="clusters_composition">Состав кластеров</string>
+    <string name="cluster_title">Кластер %1$d</string>
+    <string name="cluster_members">%1$s · %2$s</string>
+
+    <string name="generate_title">Сгенерировать величины</string>
+    <string name="generate_count">Количество величин</string>
+    <string name="generate_ranges">Диапазоны параметров</string>
+    <string name="k1_from">k₁ от</string>
+    <string name="k1_until">k₁ до, не включая</string>
+    <string name="k2_from">k₂ от</string>
+    <string name="k2_until">k₂ до, не включая</string>
+    <string name="seed">Seed</string>
+    <string name="append_to_set">Добавить к набору</string>
+    <string name="replace_set">Заменить набор</string>
+    <string name="error_positive_int">Введи целое число больше 0.</string>
+    <string name="error_k1_from">k₁ ≥ 2.</string>
+    <string name="error_k2_from">k₂ &gt; 0.</string>
+    <string name="error_until">Должно быть больше нижней границы.</string>
+    <string name="error_seed">Введи целое число или оставь пустым.</string>
+
+    <string name="add_title">Добавить величину</string>
+    <string name="add_name">Название</string>
+    <string name="add_default_name">Величина %1$s</string>
+    <string name="k1">k₁</string>
+    <string name="k2">k₂</string>
+    <string name="add_confirm">Добавить</string>
+    <string name="error_k1">Нужно k₁ ≥ 2.</string>
+    <string name="error_k2">Нужно k₂ &gt; 0.</string>
+
+    <string name="import_title">Импортировать набор</string>
+    <string name="import_no_file">Файл не выбран</string>
+    <string name="import_choose">Выбрать файл</string>
+    <string name="import_change">Изменить</string>
+    <string name="import_some_invalid">Пропущено строк: %1$d. Будет добавлено: %2$s.</string>
+    <string name="import_invalid_line">Строка %1$d: %2$s</string>
+    <string name="import_more_rows">и ещё %1$d</string>
+    <string name="import_confirm">Добавить %1$s</string>
+    <string name="import_empty_file">Файл пуст.</string>
+    <string name="import_read_error">Не удалось прочитать файл.</string>
+    <string name="reason_format">не в формате (Z Fisher)[k1; k2;]</string>
+    <string name="reason_number">значение не число</string>
+    <string name="reason_k1">k₁ меньше 2</string>
+    <string name="reason_k2">k₂ не больше 0</string>
+
+    <plurals name="quantities">
+        <item quantity="one">%1$d величина</item>
+        <item quantity="few">%1$d величины</item>
+        <item quantity="many">%1$d величин</item>
+        <item quantity="other">%1$d величины</item>
+    </plurals>
+    <plurals name="quantities_short">
+        <item quantity="one">величина</item>
+        <item quantity="few">величины</item>
+        <item quantity="many">величин</item>
+        <item quantity="other">величины</item>
+    </plurals>
+    <plurals name="clusters_short">
+        <item quantity="one">кластер</item>
+        <item quantity="few">кластера</item>
+        <item quantity="many">кластеров</item>
+        <item quantity="other">кластера</item>
+    </plurals>
+</resources>
