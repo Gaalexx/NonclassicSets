@@ -34,30 +34,42 @@ class FisherFuzzyValue(
     }
 
     override fun toString(): String {
-        return "(Z Fisher) | f_[k1 = ${parameters.k1}; k2 = ${parameters.k2}](x)"
+        return "(Z Fisher)[${parameters.k1}; ${parameters.k2};]"
     }
 
     companion object {
         private val FISHER_REGEX = Regex(
-            """\(Z Fisher\)\s*\|\s*f_\[\s*k1\s*=\s*([^;\]]+?)\s*;\s*k2\s*=\s*([^\]]+?)\s*\]\(x\)"""
+            """\(\s*Z\s+Fisher\s*\)\s*\[\s*([^;\]]*?)\s*;\s*([^;\]]*?)\s*;?\s*]"""
         )
 
         fun parse(s: String): FisherFuzzyValue {
             val (k1Str, k2Str) = FISHER_REGEX.matchEntire(s.trim())?.destructured
-                ?: error("Wrong string format: $s")
+                ?: throw FisherParseException.WrongFormat(s)
 
-            val k1 = k1Str.toDoubleOrNull() ?: error("k1 is not a number: '$k1Str'")
-            val k2 = k2Str.toDoubleOrNull() ?: error("k2 is not a number: '$k2Str'")
+            val k1 = k1Str.toParameter("k1")
+            val k2 = k2Str.toParameter("k2")
 
-            return FisherFuzzyValue(parameters = FisherParameters(k1 = k1, k2 = k2))
+            val parameters = try {
+                FisherParameters(k1 = k1, k2 = k2)
+            } catch (e: IllegalArgumentException) {
+                throw FisherParseException.InvalidParameters(k1, k2, e)
+            } catch (e: ArithmeticException) {
+                throw FisherParseException.InvalidParameters(k1, k2, e)
+            }
+            return FisherFuzzyValue(parameters = parameters)
         }
 
         fun parseOrNull(s: String): FisherFuzzyValue? {
             return try {
                 parse(s)
-            } catch (e: Exception) {
+            } catch (e: FisherParseException) {
                 null
             }
+        }
+
+        private fun String.toParameter(name: String): Double {
+            return replace(',', '.').toDoubleOrNull()
+                ?: throw FisherParseException.NotANumber(name, this)
         }
     }
 
