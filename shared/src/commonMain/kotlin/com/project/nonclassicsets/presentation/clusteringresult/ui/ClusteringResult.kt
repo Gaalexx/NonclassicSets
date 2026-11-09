@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -33,7 +32,6 @@ import com.project.nonclassicsets.domain.model.StopMode
 import com.project.nonclassicsets.presentation.clusteringresult.state.ClusteringResultViewModelState
 import com.project.nonclassicsets.presentation.clusteringresult.state.ResultRow
 import com.project.nonclassicsets.presentation.clusteringresult.viewmodel.ClusteringResultViewModel
-import com.project.nonclassicsets.presentation.shared.CountBadge
 import com.project.nonclassicsets.presentation.shared.FuzzyCard
 import com.project.nonclassicsets.presentation.shared.SecondaryButton
 import com.project.nonclassicsets.presentation.shared.chart.AlphaCutBar
@@ -51,7 +49,7 @@ import nonclassicsets.shared.generated.resources.alpha_line
 import nonclassicsets.shared.generated.resources.axis_mu
 import nonclassicsets.shared.generated.resources.axis_x
 import nonclassicsets.shared.generated.resources.close
-import nonclassicsets.shared.generated.resources.cluster_chip
+import nonclassicsets.shared.generated.resources.cluster_short
 import nonclassicsets.shared.generated.resources.membership_functions
 import nonclassicsets.shared.generated.resources.result_title
 import org.jetbrains.compose.resources.stringResource
@@ -151,20 +149,6 @@ private fun ChartCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                outcome.clusters.forEach { cluster ->
-                    val color = clusterColor(cluster.number)
-                    CountBadge(
-                        text = stringResource(Res.string.cluster_chip, cluster.number, cluster.membersLabel()),
-                        color = color.content,
-                        container = color.container
-                    )
-                }
-            }
-
             val scale = state.scale
             if (state.isLoading || scale == null) {
                 Box(
@@ -198,11 +182,11 @@ private fun ChartCard(
 
                 AlphaCutBars(
                     modifier = Modifier.fillMaxWidth(),
-                    bars = state.rows.map {
+                    bars = outcome.clusters.map {
                         AlphaCutBar(
-                            label = it.row.quantity.id,
-                            cut = it.row.cut,
-                            color = clusterColor(it.clusterNumber).content
+                            label = stringResource(Res.string.cluster_short, it.number),
+                            cut = it.cut,
+                            color = clusterColor(it.number).content
                         )
                     },
                     scale = scale

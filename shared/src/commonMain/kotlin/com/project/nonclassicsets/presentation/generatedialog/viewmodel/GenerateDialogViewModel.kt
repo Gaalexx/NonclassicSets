@@ -2,7 +2,6 @@ package com.project.nonclassicsets.presentation.generatedialog.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.project.nonclassicsets.domain.model.DatasetSource
 import com.project.nonclassicsets.domain.model.GenerationSettings
 import com.project.nonclassicsets.domain.repository.FuzzyMathRepository
 import com.project.nonclassicsets.domain.repository.FuzzySetRepository
@@ -95,9 +94,9 @@ class GenerateDialogViewModel(
             if (result.isSuccess) {
                 val drafts = result.getOrThrow()
                 if (current.replace) {
-                    setRepo.replace(drafts, DatasetSource.Generated(seed))
+                    setRepo.replace(drafts)
                 } else {
-                    setRepo.add(drafts, DatasetSource.Generated(seed))
+                    setRepo.add(drafts)
                 }
                 _event.emit(GenerateDialogEvent.Dismiss)
             } else {

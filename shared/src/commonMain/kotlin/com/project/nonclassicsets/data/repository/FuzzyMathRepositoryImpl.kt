@@ -62,12 +62,13 @@ class FuzzyMathRepositoryImpl : FuzzyMathRepository {
 
     override suspend fun membershipCurve(
         quantity: FuzzyQuantity,
+        xMin: Double,
         xMax: Double,
         pointsCount: Int
     ): List<Double> = withContext(Dispatchers.Default) {
         val value = FisherFuzzyValue(FisherParameters(k1 = quantity.k1, k2 = quantity.k2))
         List(pointsCount) { index ->
-            val x = xMax * index / (pointsCount - 1)
+            val x = xMin + (xMax - xMin) * index / (pointsCount - 1)
             try {
                 value.membership(x)
             } catch (e: ArithmeticException) {

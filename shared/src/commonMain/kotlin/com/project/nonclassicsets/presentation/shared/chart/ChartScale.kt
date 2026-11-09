@@ -10,10 +10,20 @@ import kotlin.math.pow
 @Immutable
 data class ChartScale(
     val xMax: Double,
-    val step: Double
+    val step: Double,
+    val xMin: Double = 0.0
 ) {
+    val span: Double
+        get() = xMax - xMin
+
     val ticks: List<Double>
-        get() = List((xMax / step).toInt() + 1) { it * step }
+        get() {
+            val first = ceil(xMin / step - TICK_EPSILON).toInt()
+            val last = floor(xMax / step + TICK_EPSILON).toInt()
+            return (first..last).map { it * step }
+        }
+
+    fun xAt(index: Int, pointsCount: Int): Double = xMin + span * index / (pointsCount - 1)
 }
 
 @Immutable
@@ -26,6 +36,7 @@ data class ChartCurve(
 const val CURVE_POINTS = 240
 
 private const val TICKS_COUNT = 6
+private const val TICK_EPSILON = 1e-9
 const val SINGLE_CURVE_TAIL = 4.0
 const val MANY_CURVES_TAIL = 1.6
 
@@ -33,6 +44,11 @@ fun chartScaleFor(maxRight: Double, tail: Double = MANY_CURVES_TAIL): ChartScale
     val raw = (maxRight * tail).coerceAtLeast(0.5)
     val step = niceStep(raw / TICKS_COUNT)
     return ChartScale(xMax = ceil(raw / step) * step, step = step)
+}
+
+fun chartScaleBetween(xMin: Double, xMax: Double): ChartScale {
+    val step = niceStep((xMax - xMin) / TICKS_COUNT)
+    return ChartScale(xMax = xMax, step = step, xMin = xMin)
 }
 
 private fun niceStep(value: Double): Double {

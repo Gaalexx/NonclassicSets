@@ -5,8 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed class ScreenTypes : NavKey {
-    sealed interface DialogScreen
-
     @Serializable
     data object WorkingSet : ScreenTypes()
 
@@ -14,11 +12,8 @@ sealed class ScreenTypes : NavKey {
     data object ClusteringResult : ScreenTypes()
 
     @Serializable
-    data object GenerateQuantities : ScreenTypes(), DialogScreen
+    data object GenerateQuantities : ScreenTypes()
 
     @Serializable
-    data object AddQuantity : ScreenTypes(), DialogScreen
-
-    @Serializable
-    data object ImportQuantities : ScreenTypes(), DialogScreen
+    data object AddQuantity : ScreenTypes()
 }

@@ -2,7 +2,9 @@ package com.project.nonclassicsets.presentation.workingset.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.project.nonclassicsets.domain.model.EmptyFileException
 import com.project.nonclassicsets.domain.model.StopMode
+import com.project.nonclassicsets.domain.repository.FilesRepository
 import com.project.nonclassicsets.domain.repository.FuzzyMathRepository
 import com.project.nonclassicsets.domain.repository.FuzzySetRepository
 import com.project.nonclassicsets.presentation.shared.chart.CURVE_POINTS
@@ -32,7 +34,8 @@ import kotlinx.coroutines.launch
 @ContributesIntoMap(AppScope::class)
 class WorkingSetViewModel(
     private val setRepo: FuzzySetRepository,
-    private val mathRepo: FuzzyMathRepository
+    private val mathRepo: FuzzyMathRepository,
+    private val filesRepo: FilesRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(WorkingSetViewModelState())
@@ -46,13 +49,10 @@ class WorkingSetViewModel(
 
     init {
         viewModelScope.launch {
-            combine(setRepo.quantities, setRepo.source) { quantities, source ->
-                quantities to source
-            }.collect { (quantities, source) ->
+            setRepo.quantities.collect { quantities ->
                 _state.update {
                     it.copy(
                         quantities = quantities,
-                        source = source,
                         selectedId = it.selectedId?.takeIf { id -> quantities.any { q -> q.id == id } }
                             ?: quantities.firstOrNull()?.id,
                         countError = it.stopModeType == StopModeType.Count &&
@@ -96,6 +96,42 @@ class WorkingSetViewModel(
             is WorkingSetViewModelCommand.OnEpsilonChange -> epsilonChanged(event.value)
             is WorkingSetViewModelCommand.OnCountChange -> countChanged(event.value)
             is WorkingSetViewModelCommand.Cluster -> cluster()
+            is WorkingSetViewModelCommand.ImportFile -> importFile()
+            is WorkingSetViewModelCommand.DismissImportNotice -> _state.update { it.copy(importNotice = null) }
+        }
+    }
+
+    private fun importFile() {
+        if (_state.value.isImporting) return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isImporting = true) }
+            val file = filesRepo.pickTxtFile()
+            if (file == null) {
+                _state.update { it.copy(isImporting = false) }
+                return@launch
+            }
+
+            val result = filesRepo.readTxt(file)
+            val preview = result.getOrNull()
+            if (preview != null) {
+                setRepo.add(preview.valid)
+            }
+            _state.update {
+                it.copy(
+                    isImporting = false,
+                    importNotice = when {
+                        preview == null && result.exceptionOrNull() is EmptyFileException -> ImportNotice.EmptyFile
+                        preview == null -> ImportNotice.ReadFailed
+                        preview.skipped > 0 -> ImportNotice.RowsSkipped(
+                            skipped = preview.skipped,
+                            added = preview.valid.size
+                        )
+
+                        else -> null
+                    }
+                )
+            }
         }
     }
 
@@ -163,7 +199,7 @@ class WorkingSetViewModel(
             }
 
             val scale = chartScaleFor(maxOf(selected.cut.right, selected.mode), SINGLE_CURVE_TAIL)
-            val curve = mathRepo.membershipCurve(selected.quantity, scale.xMax, CURVE_POINTS)
+            val curve = mathRepo.membershipCurve(selected.quantity, scale.xMin, scale.xMax, CURVE_POINTS)
             _state.update {
                 it.copy(
                     selectedCurve = curve,

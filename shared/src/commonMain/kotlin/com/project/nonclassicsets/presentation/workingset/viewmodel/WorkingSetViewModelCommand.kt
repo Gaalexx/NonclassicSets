@@ -10,4 +10,6 @@ sealed class WorkingSetViewModelCommand {
     data class OnEpsilonChange(val value: String) : WorkingSetViewModelCommand()
     data class OnCountChange(val value: String) : WorkingSetViewModelCommand()
     data object Cluster : WorkingSetViewModelCommand()
+    data object ImportFile : WorkingSetViewModelCommand()
+    data object DismissImportNotice : WorkingSetViewModelCommand()
 }

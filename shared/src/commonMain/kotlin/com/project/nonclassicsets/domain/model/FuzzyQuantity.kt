@@ -5,7 +5,7 @@ import androidx.compose.runtime.Immutable
 @Immutable
 data class FuzzyQuantity(
     val id: String,
-    val name: String,
+    val name: String?,
     val k1: Double,
     val k2: Double
 )

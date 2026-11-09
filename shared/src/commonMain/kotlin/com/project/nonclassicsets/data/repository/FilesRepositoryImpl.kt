@@ -28,7 +28,7 @@ class FilesRepositoryImpl : FilesRepository {
     override suspend fun readTxt(file: FileRef): Result<ImportPreview> {
         return try {
             val lines = file.platformFile().readString().lines()
-            Result.success(TxtQuantitiesParser.parse(file.name, lines))
+            Result.success(TxtQuantitiesParser.parse(lines))
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

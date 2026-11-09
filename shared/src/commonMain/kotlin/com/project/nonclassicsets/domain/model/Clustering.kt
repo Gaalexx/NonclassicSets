@@ -11,7 +11,13 @@ sealed class StopMode {
 data class Cluster(
     val number: Int,
     val members: List<QuantityWithCut>
-)
+) {
+    val cut: AlphaCut
+        get() = AlphaCut(
+            left = members.minOf { it.cut.left },
+            right = members.maxOf { it.cut.right }
+        )
+}
 
 @Immutable
 data class ClusteringOutcome(

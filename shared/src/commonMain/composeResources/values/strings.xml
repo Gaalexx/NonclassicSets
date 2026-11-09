@@ -49,7 +49,6 @@
 
     <string name="result_title">Результат кластеризации</string>
     <string name="membership_functions">Функции принадлежности</string>
-    <string name="cluster_chip">Кластер %1$d · %2$s</string>
     <string name="alpha_cuts">α-срезы</string>
     <string name="summary">Сводка</string>
     <string name="summary_alpha">Уровень α</string>
@@ -57,6 +56,7 @@
     <string name="summary_count">Число кластеров</string>
     <string name="clusters_composition">Состав кластеров</string>
     <string name="cluster_title">Кластер %1$d</string>
+    <string name="cluster_short">К%1$d</string>
     <string name="cluster_members">%1$s · %2$s</string>
 
     <string name="generate_title">Сгенерировать величины</string>
@@ -84,20 +84,10 @@
     <string name="error_k1">Нужно k₁ ≥ 2.</string>
     <string name="error_k2">Нужно k₂ &gt; 0.</string>
 
-    <string name="import_title">Импортировать набор</string>
-    <string name="import_no_file">Файл не выбран</string>
-    <string name="import_choose">Выбрать файл</string>
-    <string name="import_change">Изменить</string>
-    <string name="import_some_invalid">Пропущено строк: %1$d. Будет добавлено: %2$s.</string>
-    <string name="import_invalid_line">Строка %1$d: %2$s</string>
-    <string name="import_more_rows">и ещё %1$d</string>
-    <string name="import_confirm">Добавить %1$s</string>
+    <string name="import_some_invalid">Пропущено некорректных строк: %1$d. Добавлено: %2$s.</string>
+    <string name="import_notice_hide">Скрыть</string>
     <string name="import_empty_file">Файл пуст.</string>
     <string name="import_read_error">Не удалось прочитать файл.</string>
-    <string name="reason_format">не в формате (Z Fisher)[k1; k2;]</string>
-    <string name="reason_number">значение не число</string>
-    <string name="reason_k1">k₁ меньше 2</string>
-    <string name="reason_k2">k₂ не больше 0</string>
 
     <plurals name="quantities">
         <item quantity="one">%1$d величина</item>

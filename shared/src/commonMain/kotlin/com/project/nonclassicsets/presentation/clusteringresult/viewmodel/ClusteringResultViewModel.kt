@@ -9,7 +9,7 @@ import com.project.nonclassicsets.presentation.clusteringresult.state.Clustering
 import com.project.nonclassicsets.presentation.clusteringresult.state.ResultCurve
 import com.project.nonclassicsets.presentation.clusteringresult.state.ResultRow
 import com.project.nonclassicsets.presentation.shared.chart.CURVE_POINTS
-import com.project.nonclassicsets.presentation.shared.chart.chartScaleFor
+import com.project.nonclassicsets.presentation.shared.chart.chartScaleBetween
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
@@ -34,6 +34,8 @@ class ClusteringResultViewModel(
 
     companion object {
         private const val MAX_DASHED_QUANTITIES = 12
+        private const val CHART_X_MIN = -1.0
+        private const val CHART_RIGHT_PADDING = 2.0
     }
 
     private val _state = MutableStateFlow(ClusteringResultViewModelState())
@@ -64,7 +66,10 @@ class ClusteringResultViewModel(
             }
             .sortedWith(compareBy({ it.row.quantity.id.length }, { it.row.quantity.id }))
 
-        val scale = chartScaleFor(rows.maxOf { maxOf(it.row.cut.right, it.row.mode) })
+        val scale = chartScaleBetween(
+            xMin = CHART_X_MIN,
+            xMax = rows.maxOf { it.row.cut.right } + CHART_RIGHT_PADDING
+        )
 
         val curves = coroutineScope {
             rows.map { row ->
@@ -72,7 +77,7 @@ class ClusteringResultViewModel(
                     ResultCurve(
                         clusterNumber = row.clusterNumber,
                         dashed = row.dashed,
-                        values = mathRepo.membershipCurve(row.row.quantity, scale.xMax, CURVE_POINTS)
+                        values = mathRepo.membershipCurve(row.row.quantity, scale.xMin, scale.xMax, CURVE_POINTS)
                     )
                 }
             }.awaitAll()

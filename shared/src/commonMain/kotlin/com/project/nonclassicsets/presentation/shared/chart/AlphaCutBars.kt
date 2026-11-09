@@ -75,8 +75,8 @@ fun AlphaCutBars(
                         .fillMaxSize()
                 ) {
                     val widthPx = with(density) { maxWidth.toPx() }
-                    val leftPx = (bar.cut.left / scale.xMax * widthPx).toFloat().coerceIn(0f, widthPx)
-                    val rightPx = (bar.cut.right / scale.xMax * widthPx).toFloat().coerceIn(0f, widthPx)
+                    val leftPx = ((bar.cut.left - scale.xMin) / scale.span * widthPx).toFloat().coerceIn(0f, widthPx)
+                    val rightPx = ((bar.cut.right - scale.xMin) / scale.span * widthPx).toFloat().coerceIn(0f, widthPx)
 
                     Canvas(modifier = Modifier.fillMaxSize()) {
                         val y = size.height / 2f

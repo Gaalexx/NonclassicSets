@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.project.nonclassicsets.presentation.shared.FuzzyCard
 import com.project.nonclassicsets.presentation.shared.chart.ChartCurve
 import com.project.nonclassicsets.presentation.shared.chart.MembershipChart
+import com.project.nonclassicsets.presentation.shared.displayName
 import com.project.nonclassicsets.presentation.shared.format
 import com.project.nonclassicsets.presentation.shared.formatDecimal
 import com.project.nonclassicsets.presentation.shared.formatLevel
@@ -43,7 +44,7 @@ fun SelectedQuantityCard(
     FuzzyCard(modifier = modifier) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = selected.quantity.name,
+                text = selected.quantity.displayName(),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

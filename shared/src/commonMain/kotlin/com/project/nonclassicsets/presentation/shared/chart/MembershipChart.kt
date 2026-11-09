@@ -57,7 +57,7 @@ fun MembershipChart(
         val plotWidth = plotRight - plotLeft
         val plotHeight = plotBottom - plotTop
 
-        fun xToPx(x: Double) = plotLeft + (x / scale.xMax * plotWidth).toFloat()
+        fun xToPx(x: Double) = plotLeft + ((x - scale.xMin) / scale.span * plotWidth).toFloat()
         fun yToPx(y: Double) = plotBottom - (y * plotHeight).toFloat()
 
         for (step in 0..5) {
@@ -90,7 +90,7 @@ fun MembershipChart(
         )
 
         curves.forEach { curve ->
-            drawCurve(curve, ::xToPx, ::yToPx, scale.xMax, curveWidth.toPx())
+            drawCurve(curve, ::xToPx, ::yToPx, scale, curveWidth.toPx())
         }
 
         if (alpha != null) {
@@ -118,13 +118,13 @@ private fun DrawScope.drawCurve(
     curve: ChartCurve,
     xToPx: (Double) -> Float,
     yToPx: (Double) -> Float,
-    xMax: Double,
+    scale: ChartScale,
     width: Float,
 ) {
     if (curve.values.size < 2) return
     val path = Path()
     curve.values.forEachIndexed { index, value ->
-        val x = xToPx(xMax * index / (curve.values.size - 1))
+        val x = xToPx(scale.xAt(index, curve.values.size))
         val y = yToPx(value.coerceIn(0.0, 1.0))
         if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
     }

@@ -38,6 +38,7 @@ import com.project.nonclassicsets.presentation.shared.formatLevel
 import com.project.nonclassicsets.presentation.shared.formatParameter
 import com.project.nonclassicsets.presentation.workingset.state.WorkingSetViewModelState
 import com.project.nonclassicsets.presentation.workingset.viewmodel.WorkingSetViewModelCommand
+import com.project.nonclassicsets.presentation.shared.displayName
 import nonclassicsets.shared.generated.resources.Res
 import nonclassicsets.shared.generated.resources.column_cut
 import nonclassicsets.shared.generated.resources.column_cut_unknown
@@ -132,7 +133,7 @@ private fun QuantityRow(
             .clickable(onClick = onClick),
         style = MaterialTheme.typography.bodyMedium,
         id = quantity.id,
-        name = quantity.name,
+        name = quantity.displayName(),
         k1 = quantity.k1.formatParameter(),
         k2 = quantity.k2.formatParameter(),
         cut = row?.cut?.format() ?: stringResource(Res.string.cut_not_computed),

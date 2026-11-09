@@ -2,7 +2,6 @@ package com.project.nonclassicsets.presentation.adddialog.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.project.nonclassicsets.domain.model.DatasetSource
 import com.project.nonclassicsets.domain.model.FuzzyQuantityDraft
 import com.project.nonclassicsets.domain.repository.FuzzySetRepository
 import com.project.nonclassicsets.presentation.adddialog.state.AddQuantityDialogViewModelState
@@ -25,15 +24,8 @@ class AddQuantityDialogViewModel(
     private val setRepo: FuzzySetRepository
 ) : ViewModel() {
 
-    companion object {
-        private const val DEFAULT_NAME = "Величина"
-    }
-
     private val _state = MutableStateFlow(
-        AddQuantityDialogViewModelState(
-            nextId = setRepo.nextId(),
-            nameInput = "$DEFAULT_NAME ${setRepo.nextId()}"
-        )
+        AddQuantityDialogViewModelState(nextId = setRepo.nextId())
     )
     val state = _state.asStateFlow()
 
@@ -76,10 +68,7 @@ class AddQuantityDialogViewModel(
             return
         }
 
-        setRepo.add(
-            listOf(FuzzyQuantityDraft(name = current.nameInput, k1 = k1, k2 = k2)),
-            DatasetSource.Manual
-        )
+        setRepo.add(listOf(FuzzyQuantityDraft(name = current.nameInput, k1 = k1, k2 = k2)))
         viewModelScope.launch {
             _event.emit(AddQuantityDialogEvent.Dismiss)
         }
