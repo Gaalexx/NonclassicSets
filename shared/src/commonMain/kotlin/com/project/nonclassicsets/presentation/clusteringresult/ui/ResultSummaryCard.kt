@@ -7,13 +7,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
@@ -24,7 +25,6 @@ import com.project.nonclassicsets.presentation.shared.FuzzyCard
 import com.project.nonclassicsets.presentation.shared.formatLevel
 import com.project.nonclassicsets.presentation.theme.clusterColor
 import nonclassicsets.shared.generated.resources.Res
-import nonclassicsets.shared.generated.resources.cluster_members
 import nonclassicsets.shared.generated.resources.cluster_title
 import nonclassicsets.shared.generated.resources.clusters_composition
 import nonclassicsets.shared.generated.resources.clusters_short
@@ -37,17 +37,6 @@ import nonclassicsets.shared.generated.resources.summary_epsilon
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
-private const val MAX_LISTED_MEMBERS = 8
-
-fun Cluster.membersLabel(): String {
-    val ids = members.map { it.quantity.id }
-    return if (ids.size <= MAX_LISTED_MEMBERS) {
-        ids.joinToString(", ")
-    } else {
-        ids.take(MAX_LISTED_MEMBERS).joinToString(", ") + ", …"
-    }
-}
-
 @Composable
 fun ResultSummaryCard(
     modifier: Modifier = Modifier,
@@ -56,51 +45,64 @@ fun ResultSummaryCard(
     val textColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     FuzzyCard(modifier = modifier) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState()),
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            Text(
-                text = stringResource(Res.string.summary),
-                style = MaterialTheme.typography.headlineSmall,
-                color = textColor
-            )
-
-            Row(modifier = Modifier.fillMaxWidth()) {
-                SummaryNumber(
-                    modifier = Modifier.weight(1f),
-                    value = outcome.quantitiesCount,
-                    label = pluralStringResource(Res.plurals.quantities_short, outcome.quantitiesCount)
-                )
-                SummaryNumber(
-                    modifier = Modifier.weight(1f),
-                    value = outcome.clusters.size,
-                    label = pluralStringResource(Res.plurals.clusters_short, outcome.clusters.size)
+            item(key = "title") {
+                Text(
+                    text = stringResource(Res.string.summary),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = textColor
                 )
             }
 
-            HorizontalDivider(
-                modifier = Modifier.padding(top = 12.dp),
-                color = MaterialTheme.colorScheme.outlineVariant
-            )
-
-            SummaryValue(stringResource(Res.string.summary_alpha), outcome.alpha.formatLevel())
-            when (val mode = outcome.stopMode) {
-                is StopMode.ByThreshold -> SummaryValue(stringResource(Res.string.summary_epsilon), mode.epsilon.formatLevel())
-                is StopMode.ByCount -> SummaryValue(stringResource(Res.string.summary_count), mode.count.toString())
+            item(key = "numbers") {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    SummaryNumber(
+                        modifier = Modifier.weight(1f),
+                        value = outcome.quantitiesCount,
+                        label = pluralStringResource(Res.plurals.quantities_short, outcome.quantitiesCount)
+                    )
+                    SummaryNumber(
+                        modifier = Modifier.weight(1f),
+                        value = outcome.clusters.size,
+                        label = pluralStringResource(Res.plurals.clusters_short, outcome.clusters.size)
+                    )
+                }
             }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            item(key = "divider_top") {
+                HorizontalDivider(
+                    modifier = Modifier.padding(top = 12.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+            }
 
-            Text(
-                text = stringResource(Res.string.clusters_composition),
-                style = MaterialTheme.typography.titleMedium,
-                color = textColor
-            )
+            item(key = "alpha") {
+                SummaryValue(stringResource(Res.string.summary_alpha), outcome.alpha.formatLevel())
+            }
 
-            outcome.clusters.forEach { cluster ->
+            item(key = "stop_mode") {
+                when (val mode = outcome.stopMode) {
+                    is StopMode.ByThreshold -> SummaryValue(stringResource(Res.string.summary_epsilon), mode.epsilon.formatLevel())
+                    is StopMode.ByCount -> SummaryValue(stringResource(Res.string.summary_count), mode.count.toString())
+                }
+            }
+
+            item(key = "divider_bottom") {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
+
+            item(key = "composition_title") {
+                Text(
+                    text = stringResource(Res.string.clusters_composition),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = textColor
+                )
+            }
+
+            items(outcome.clusters, key = { "cluster_${it.number}" }) { cluster ->
                 ClusterCard(cluster = cluster)
             }
         }
@@ -158,17 +160,25 @@ private fun ClusterCard(cluster: Cluster) {
             .padding(horizontal = 12.dp, vertical = 9.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Text(
+                modifier = Modifier.weight(1f),
+                text = stringResource(Res.string.cluster_title, cluster.number),
+                style = MaterialTheme.typography.titleMedium,
+                color = color.content
+            )
+            Text(
+                text = pluralStringResource(Res.plurals.quantities, cluster.members.size, cluster.members.size),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
         Text(
-            text = stringResource(Res.string.cluster_title, cluster.number),
-            style = MaterialTheme.typography.titleMedium,
-            color = color.content
-        )
-        Text(
-            text = stringResource(
-                Res.string.cluster_members,
-                cluster.membersLabel(),
-                pluralStringResource(Res.plurals.quantities, cluster.members.size, cluster.members.size)
-            ),
+            text = cluster.members.joinToString(", ") { it.quantity.name ?: it.quantity.id },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

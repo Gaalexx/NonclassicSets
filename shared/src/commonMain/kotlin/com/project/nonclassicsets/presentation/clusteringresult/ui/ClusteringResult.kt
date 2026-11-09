@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,8 +34,7 @@ import com.project.nonclassicsets.presentation.clusteringresult.state.ResultRow
 import com.project.nonclassicsets.presentation.clusteringresult.viewmodel.ClusteringResultViewModel
 import com.project.nonclassicsets.presentation.shared.FuzzyCard
 import com.project.nonclassicsets.presentation.shared.SecondaryButton
-import com.project.nonclassicsets.presentation.shared.chart.AlphaCutBar
-import com.project.nonclassicsets.presentation.shared.chart.AlphaCutBars
+import com.project.nonclassicsets.presentation.shared.chart.AlphaCutBarRow
 import com.project.nonclassicsets.presentation.shared.chart.ChartCurve
 import com.project.nonclassicsets.presentation.shared.chart.ChartScale
 import com.project.nonclassicsets.presentation.shared.chart.MembershipChart
@@ -130,6 +129,9 @@ fun ClusteringResult(
     }
 }
 
+private val ChartHeight = 344.dp
+private val ChartCardSpacing = 14.dp
+
 @Composable
 private fun ChartCard(
     modifier: Modifier = Modifier,
@@ -137,60 +139,63 @@ private fun ChartCard(
     outcome: ClusteringOutcome,
 ) {
     FuzzyCard(modifier = modifier) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            Text(
-                text = stringResource(Res.string.membership_functions),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+            item(key = "title") {
+                Text(
+                    modifier = Modifier.padding(bottom = ChartCardSpacing),
+                    text = stringResource(Res.string.membership_functions),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             val scale = state.scale
             if (state.isLoading || scale == null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(344.dp)
-                ) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                item(key = "loading") {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(ChartHeight)
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    }
                 }
             } else {
-                MembershipChart(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(344.dp),
-                    curves = state.curves.map {
-                        ChartCurve(values = it.values, color = clusterColor(it.clusterNumber).content, dashed = it.dashed)
-                    },
-                    scale = scale,
-                    alpha = outcome.alpha,
-                    alphaLabel = stringResource(Res.string.alpha_line, outcome.alpha.formatLevel()),
-                    muLabel = stringResource(Res.string.axis_mu),
-                    xLabel = stringResource(Res.string.axis_x),
-                    curveWidth = if (state.curves.size > 30) 1.2.dp else 2.5.dp
-                )
+                item(key = "chart") {
+                    MembershipChart(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = ChartCardSpacing)
+                            .height(ChartHeight),
+                        curves = state.curves.map {
+                            ChartCurve(values = it.values, color = clusterColor(it.clusterNumber).content, dashed = it.dashed)
+                        },
+                        scale = scale,
+                        alpha = outcome.alpha,
+                        alphaLabel = stringResource(Res.string.alpha_line, outcome.alpha.formatLevel()),
+                        muLabel = stringResource(Res.string.axis_mu),
+                        xLabel = stringResource(Res.string.axis_x),
+                        curveWidth = if (state.curves.size > 30) 1.2.dp else 2.5.dp
+                    )
+                }
 
-                Text(
-                    text = stringResource(Res.string.alpha_cuts),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                item(key = "cuts_title") {
+                    Text(
+                        modifier = Modifier.padding(bottom = ChartCardSpacing),
+                        text = stringResource(Res.string.alpha_cuts),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
 
-                AlphaCutBars(
-                    modifier = Modifier.fillMaxWidth(),
-                    bars = outcome.clusters.map {
-                        AlphaCutBar(
-                            label = stringResource(Res.string.cluster_short, it.number),
-                            cut = it.cut,
-                            color = clusterColor(it.number).content
-                        )
-                    },
-                    scale = scale
-                )
+                items(outcome.clusters, key = { "cluster_${it.number}" }) { cluster ->
+                    AlphaCutBarRow(
+                        label = stringResource(Res.string.cluster_short, cluster.number),
+                        cut = cluster.cut,
+                        color = clusterColor(cluster.number).content,
+                        scale = scale
+                    )
+                }
             }
         }
     }
