@@ -1,9 +1,11 @@
 package com.project.nonclassicsets.data.repository
 
+import com.project.nonclassicsets.data.files.LogMessages
 import com.project.nonclassicsets.domain.model.ClusteringOutcome
 import com.project.nonclassicsets.domain.model.FuzzyQuantity
 import com.project.nonclassicsets.domain.model.FuzzyQuantityDraft
 import com.project.nonclassicsets.domain.repository.FuzzySetRepository
+import com.project.nonclassicsets.domain.repository.LogRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -16,7 +18,9 @@ import kotlinx.coroutines.flow.update
 @Inject
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
-class FuzzySetRepositoryImpl : FuzzySetRepository {
+class FuzzySetRepositoryImpl(
+    private val logRepo: LogRepository
+) : FuzzySetRepository {
     private var idCounter = 0
 
     private val _quantities = MutableStateFlow<List<FuzzyQuantity>>(emptyList())
@@ -29,21 +33,28 @@ class FuzzySetRepositoryImpl : FuzzySetRepository {
 
     override fun add(drafts: List<FuzzyQuantityDraft>) {
         if (drafts.isEmpty()) return
-        _quantities.update { it + drafts.map(::toQuantity) }
+        val added = drafts.map(::toQuantity)
+        _quantities.update { it + added }
+        logRepo.log(LogMessages.added(added))
     }
 
     override fun replace(drafts: List<FuzzyQuantityDraft>) {
         idCounter = 0
-        _quantities.value = drafts.map(::toQuantity)
+        val quantities = drafts.map(::toQuantity)
+        _quantities.value = quantities
+        logRepo.log(LogMessages.replaced(quantities))
     }
 
     override fun remove(id: String) {
-        _quantities.update { list -> list.filterNot { it.id == id } }
+        val removed = _quantities.value.find { it.id == id } ?: return
+        _quantities.update { list -> list - removed }
+        logRepo.log(LogMessages.removed(removed))
         if (_quantities.value.isEmpty()) idCounter = 0
     }
 
     override fun saveResult(result: ClusteringOutcome) {
         _lastResult.value = result
+        logRepo.log(LogMessages.clustered(result))
     }
 
     private fun toQuantity(draft: FuzzyQuantityDraft): FuzzyQuantity {

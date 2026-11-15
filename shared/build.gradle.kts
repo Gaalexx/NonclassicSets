@@ -23,6 +23,7 @@ kotlin {
             implementation(libs.androidx.navigation3.ui)
             implementation(libs.kotlinx.serializationJson)
             implementation(libs.kotlinx.coroutinesCore)
+            implementation(libs.kotlinx.datetime)
             implementation(libs.filekit.core)
             implementation(libs.filekit.dialogs)
             implementation(libs.vico.compose)

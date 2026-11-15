@@ -5,6 +5,7 @@ composeMultiplatform = "1.12.1"
 junit = "4.13.2"
 kotlin = "2.4.20"
 kotlinx-coroutines = "1.11.0"
+kotlinx-datetime = "0.7.1"
 kotlinx-serialization = "1.11.0"
 material3 = "1.12.0-alpha03"
 metro = "1.4.5"
@@ -31,6 +32,7 @@ kotlinx-serializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serializat
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
 filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit" }
 vico-compose = { module = "com.patrykandpatrick.vico:compose", version.ref = "vico" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 
 [plugins]
