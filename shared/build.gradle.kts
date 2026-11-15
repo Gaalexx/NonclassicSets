@@ -25,6 +25,7 @@ kotlin {
             implementation(libs.kotlinx.coroutinesCore)
             implementation(libs.filekit.core)
             implementation(libs.filekit.dialogs)
+            implementation(libs.vico.compose)
             implementation(project(":MathCore"))
             api(libs.metrox.viewmodelCompose)
         }

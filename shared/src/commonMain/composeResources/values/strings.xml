@@ -50,6 +50,8 @@
     <string name="result_title">Результат кластеризации</string>
     <string name="membership_functions">Функции принадлежности</string>
     <string name="alpha_cuts">α-срезы</string>
+    <string name="zoom_hint">Колесо мыши — масштаб, перетаскивание — сдвиг</string>
+    <string name="reset_zoom">Сбросить масштаб</string>
     <string name="summary">Сводка</string>
     <string name="summary_alpha">Уровень α</string>
     <string name="summary_epsilon">Порог ε</string>

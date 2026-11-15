@@ -25,8 +25,6 @@ import com.project.nonclassicsets.presentation.shared.formatParameter
 import com.project.nonclassicsets.presentation.workingset.state.WorkingSetViewModelState
 import nonclassicsets.shared.generated.resources.Res
 import nonclassicsets.shared.generated.resources.alpha_line
-import nonclassicsets.shared.generated.resources.axis_mu
-import nonclassicsets.shared.generated.resources.axis_x
 import nonclassicsets.shared.generated.resources.cut_at_alpha
 import nonclassicsets.shared.generated.resources.max_membership
 import nonclassicsets.shared.generated.resources.max_membership_value
@@ -72,17 +70,13 @@ fun SelectedQuantityCard(
                 val scale = state.selectedScale
                 if (scale != null) {
                     MembershipChart(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(166.dp),
                         curves = listOf(
                             ChartCurve(values = state.selectedCurve, color = MaterialTheme.colorScheme.primary)
                         ),
                         scale = scale,
                         alpha = state.alpha,
                         alphaLabel = stringResource(Res.string.alpha_line, alphaText),
-                        muLabel = stringResource(Res.string.axis_mu),
-                        xLabel = stringResource(Res.string.axis_x),
+                        chartAreaHeight = 130.dp,
                     )
                 }
             }

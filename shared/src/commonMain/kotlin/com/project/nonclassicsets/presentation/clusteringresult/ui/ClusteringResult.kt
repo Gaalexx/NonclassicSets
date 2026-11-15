@@ -1,6 +1,7 @@
 package com.project.nonclassicsets.presentation.clusteringresult.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,16 +14,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.patrykandpatrick.vico.compose.cartesian.Zoom
+import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
+import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
 import com.project.nonclassicsets.domain.model.AlphaCut
 import com.project.nonclassicsets.domain.model.Cluster
 import com.project.nonclassicsets.domain.model.ClusteringOutcome
@@ -34,7 +38,9 @@ import com.project.nonclassicsets.presentation.clusteringresult.state.ResultRow
 import com.project.nonclassicsets.presentation.clusteringresult.viewmodel.ClusteringResultViewModel
 import com.project.nonclassicsets.presentation.shared.FuzzyCard
 import com.project.nonclassicsets.presentation.shared.SecondaryButton
-import com.project.nonclassicsets.presentation.shared.chart.AlphaCutBarRow
+import com.project.nonclassicsets.presentation.shared.chart.AlphaCutBar
+import com.project.nonclassicsets.presentation.shared.chart.AlphaCutsBoundsWidth
+import com.project.nonclassicsets.presentation.shared.chart.AlphaCutsChart
 import com.project.nonclassicsets.presentation.shared.chart.ChartCurve
 import com.project.nonclassicsets.presentation.shared.chart.ChartScale
 import com.project.nonclassicsets.presentation.shared.chart.MembershipChart
@@ -42,15 +48,16 @@ import com.project.nonclassicsets.presentation.shared.formatLevel
 import com.project.nonclassicsets.presentation.theme.FuzzyLabTheme
 import com.project.nonclassicsets.presentation.theme.clusterColor
 import dev.zacsweers.metrox.viewmodel.metroViewModel
+import kotlinx.coroutines.launch
 import nonclassicsets.shared.generated.resources.Res
 import nonclassicsets.shared.generated.resources.alpha_cuts
 import nonclassicsets.shared.generated.resources.alpha_line
-import nonclassicsets.shared.generated.resources.axis_mu
-import nonclassicsets.shared.generated.resources.axis_x
 import nonclassicsets.shared.generated.resources.close
 import nonclassicsets.shared.generated.resources.cluster_short
 import nonclassicsets.shared.generated.resources.membership_functions
+import nonclassicsets.shared.generated.resources.reset_zoom
 import nonclassicsets.shared.generated.resources.result_title
+import nonclassicsets.shared.generated.resources.zoom_hint
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -138,18 +145,43 @@ private fun ChartCard(
     state: ClusteringResultViewModelState,
     outcome: ClusteringOutcome,
 ) {
+    val scale = state.scale
+    val scrollState = rememberVicoScrollState()
+    val zoomState = rememberVicoZoomState(initialZoom = Zoom.Content)
+    val coroutineScope = rememberCoroutineScope()
+
     FuzzyCard(modifier = modifier) {
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             item(key = "title") {
-                Text(
-                    modifier = Modifier.padding(bottom = ChartCardSpacing),
-                    text = stringResource(Res.string.membership_functions),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = ChartCardSpacing),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(Res.string.membership_functions),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.weight(1f))
+                    if (zoomState.value > zoomState.valueRange.start) {
+                        Text(
+                            modifier = Modifier.clickable { coroutineScope.launch { zoomState.zoom(Zoom.Content) } },
+                            text = stringResource(Res.string.reset_zoom),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(Res.string.zoom_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
 
-            val scale = state.scale
             if (state.isLoading || scale == null) {
                 item(key = "loading") {
                     Box(
@@ -163,37 +195,40 @@ private fun ChartCard(
             } else {
                 item(key = "chart") {
                     MembershipChart(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = ChartCardSpacing)
-                            .height(ChartHeight),
+                        modifier = Modifier.padding(end = AlphaCutsBoundsWidth),
                         curves = state.curves.map {
                             ChartCurve(values = it.values, color = clusterColor(it.clusterNumber).content, dashed = it.dashed)
                         },
                         scale = scale,
                         alpha = outcome.alpha,
                         alphaLabel = stringResource(Res.string.alpha_line, outcome.alpha.formatLevel()),
-                        muLabel = stringResource(Res.string.axis_mu),
-                        xLabel = stringResource(Res.string.axis_x),
-                        curveWidth = if (state.curves.size > 30) 1.2.dp else 2.5.dp
+                        curveWidth = if (state.curves.size > 30) 1.2.dp else 2.5.dp,
+                        scrollState = scrollState,
+                        zoomState = zoomState
                     )
                 }
 
                 item(key = "cuts_title") {
                     Text(
-                        modifier = Modifier.padding(bottom = ChartCardSpacing),
+                        modifier = Modifier.padding(top = ChartCardSpacing),
                         text = stringResource(Res.string.alpha_cuts),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
-                items(outcome.clusters, key = { "cluster_${it.number}" }) { cluster ->
-                    AlphaCutBarRow(
-                        label = stringResource(Res.string.cluster_short, cluster.number),
-                        cut = cluster.cut,
-                        color = clusterColor(cluster.number).content,
-                        scale = scale
+                item(key = "cuts") {
+                    AlphaCutsChart(
+                        bars = outcome.clusters.map { cluster ->
+                            AlphaCutBar(
+                                label = stringResource(Res.string.cluster_short, cluster.number),
+                                cut = cluster.cut,
+                                color = clusterColor(cluster.number).content
+                            )
+                        },
+                        scale = scale,
+                        scrollState = scrollState,
+                        zoomState = zoomState
                     )
                 }
             }
@@ -229,7 +264,7 @@ private fun ClusteringResultPreview() {
                     ResultRow(previewRows[2], 2, false),
                     ResultRow(previewRows[3], 3, false),
                 ),
-                scale = ChartScale(xMax = 6.0, step = 1.0),
+                scale = ChartScale(xMax = 6.0),
                 isLoading = false
             )
         )

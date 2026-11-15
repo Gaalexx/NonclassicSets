@@ -8,7 +8,7 @@ import com.project.nonclassicsets.domain.repository.FuzzySetRepository
 import com.project.nonclassicsets.presentation.clusteringresult.state.ClusteringResultViewModelState
 import com.project.nonclassicsets.presentation.clusteringresult.state.ResultCurve
 import com.project.nonclassicsets.presentation.clusteringresult.state.ResultRow
-import com.project.nonclassicsets.presentation.shared.chart.CURVE_POINTS
+import com.project.nonclassicsets.presentation.shared.chart.ZOOMABLE_CURVE_POINTS
 import com.project.nonclassicsets.presentation.shared.chart.chartScaleBetween
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
@@ -77,7 +77,7 @@ class ClusteringResultViewModel(
                     ResultCurve(
                         clusterNumber = row.clusterNumber,
                         dashed = row.dashed,
-                        values = mathRepo.membershipCurve(row.row.quantity, scale.xMin, scale.xMax, CURVE_POINTS)
+                        values = mathRepo.membershipCurve(row.row.quantity, scale.xMin, scale.xMax, ZOOMABLE_CURVE_POINTS)
                     )
                 }
             }.awaitAll()
