@@ -97,7 +97,20 @@ class WorkingSetViewModel(
             is WorkingSetViewModelCommand.OnCountChange -> countChanged(event.value)
             is WorkingSetViewModelCommand.Cluster -> cluster()
             is WorkingSetViewModelCommand.ImportFile -> importFile()
-            is WorkingSetViewModelCommand.DismissImportNotice -> _state.update { it.copy(importNotice = null) }
+            is WorkingSetViewModelCommand.DismissImportNotice -> _state.update {
+                it.copy(
+                    importNotice = null
+                )
+            }
+
+            is WorkingSetViewModelCommand.ClearQuantities -> clearQuantities()
+        }
+    }
+
+    private fun clearQuantities() {
+        viewModelScope.launch {
+            _state.update { it.copy(quantities = emptyList(), cuts = emptyMap()) }
+            setRepo.clear()
         }
     }
 
@@ -199,7 +212,8 @@ class WorkingSetViewModel(
             }
 
             val scale = chartScaleFor(maxOf(selected.cut.right, selected.mode), SINGLE_CURVE_TAIL)
-            val curve = mathRepo.membershipCurve(selected.quantity, scale.xMin, scale.xMax, CURVE_POINTS)
+            val curve =
+                mathRepo.membershipCurve(selected.quantity, scale.xMin, scale.xMax, CURVE_POINTS)
             _state.update {
                 it.copy(
                     selectedCurve = curve,

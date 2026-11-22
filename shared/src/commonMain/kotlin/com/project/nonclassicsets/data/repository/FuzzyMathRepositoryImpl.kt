@@ -4,8 +4,11 @@ import com.gaalex.mathcore.clusterization.AgglomerativeClusterer
 import com.gaalex.mathcore.clusterization.ClusterMode
 import com.gaalex.mathcore.clusterization.EndpointIntervalDistance
 import com.gaalex.mathcore.clusterization.IntervalClusterer
+import com.gaalex.mathcore.fuzzy.AlphaLevelFuzzyValue
 import com.gaalex.mathcore.fuzzy.FisherFuzzyValue
 import com.gaalex.mathcore.fuzzy.FisherParameters
+import com.gaalex.mathcore.fuzzy.FuzzyValue
+import com.gaalex.mathcore.fuzzy.operations.FuzzyArithmetic
 import com.gaalex.mathcore.generation.FisherDatasetGenerator
 import com.gaalex.mathcore.generation.FisherFuzzyDatasetGenerator
 import com.gaalex.mathcore.generation.GenerationConfig
@@ -130,6 +133,63 @@ class FuzzyMathRepositoryImpl : FuzzyMathRepository {
                 Result.failure(e)
             }
         }
+
+    private suspend fun mathFunction(
+        first: FuzzyQuantity,
+        second: FuzzyQuantity,
+        func: suspend (FuzzyValue, FuzzyValue) -> AlphaLevelFuzzyValue
+    ): List<AlphaCut> {
+        val firstValue = FisherFuzzyValue(parameters = FisherParameters(first.k1, first.k2))
+        val secondValue = FisherFuzzyValue(parameters = FisherParameters(second.k1, second.k2))
+        val resValue = func(firstValue, secondValue)
+        return buildList {
+            resValue.levels.forEach {
+                add(AlphaCut(it.cut.left, it.cut.right))
+            }
+        }
+    }
+
+    private suspend fun tryMathFunction(
+        first: FuzzyQuantity,
+        second: FuzzyQuantity,
+        func: suspend (FuzzyValue, FuzzyValue) -> AlphaLevelFuzzyValue
+    ): Result<List<AlphaCut>>{
+        try{
+            val res = mathFunction(first, second, func)
+            return Result.success(res)
+        }
+        catch (e: Exception){
+            return Result.failure(e)
+        }
+    }
+
+    override suspend fun add(
+        first: FuzzyQuantity,
+        second: FuzzyQuantity
+    ): Result<List<AlphaCut>> {
+        return tryMathFunction(first, second, FuzzyArithmetic()::add)
+    }
+
+    override suspend fun subtract(
+        first: FuzzyQuantity,
+        second: FuzzyQuantity
+    ): Result<List<AlphaCut>> {
+        return tryMathFunction(first, second, FuzzyArithmetic()::subtract)
+    }
+
+    override suspend fun multiply(
+        first: FuzzyQuantity,
+        second: FuzzyQuantity
+    ): Result<List<AlphaCut>> {
+        return tryMathFunction(first, second, FuzzyArithmetic()::multiply)
+    }
+
+    override suspend fun divide(
+        first: FuzzyQuantity,
+        second: FuzzyQuantity
+    ): Result<List<AlphaCut>> {
+        return tryMathFunction(first, second, FuzzyArithmetic()::divide)
+    }
 
     private fun AlphaCut.toInterval(): Interval = Interval(left, right)
 }

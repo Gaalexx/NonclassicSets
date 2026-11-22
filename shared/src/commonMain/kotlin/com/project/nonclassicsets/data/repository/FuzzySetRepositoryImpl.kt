@@ -57,6 +57,11 @@ class FuzzySetRepositoryImpl(
         logRepo.log(LogMessages.clustered(result))
     }
 
+    override fun clear() {
+        _quantities.update { emptyList() }
+        _lastResult.update { null }
+    }
+
     private fun toQuantity(draft: FuzzyQuantityDraft): FuzzyQuantity {
         return FuzzyQuantity(
             id = idFromIndex(idCounter++),

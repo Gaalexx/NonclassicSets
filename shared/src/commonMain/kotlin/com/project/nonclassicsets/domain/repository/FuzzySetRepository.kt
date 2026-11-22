@@ -14,4 +14,5 @@ interface FuzzySetRepository {
     fun replace(drafts: List<FuzzyQuantityDraft>)
     fun remove(id: String)
     fun saveResult(result: ClusteringOutcome)
+    fun clear()
 }

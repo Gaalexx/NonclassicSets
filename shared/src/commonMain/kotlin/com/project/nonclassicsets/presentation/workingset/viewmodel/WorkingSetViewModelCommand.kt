@@ -12,4 +12,5 @@ sealed class WorkingSetViewModelCommand {
     data object Cluster : WorkingSetViewModelCommand()
     data object ImportFile : WorkingSetViewModelCommand()
     data object DismissImportNotice : WorkingSetViewModelCommand()
+    data object ClearQuantities : WorkingSetViewModelCommand()
 }

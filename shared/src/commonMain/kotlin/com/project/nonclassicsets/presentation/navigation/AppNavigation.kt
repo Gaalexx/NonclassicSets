@@ -11,6 +11,7 @@ import androidx.navigation3.scene.SinglePaneSceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.project.nonclassicsets.presentation.adddialog.ui.AddQuantityDialogRoot
+import com.project.nonclassicsets.presentation.calculator.ui.CalculatorRoot
 import com.project.nonclassicsets.presentation.clusteringresult.ui.ClusteringResultRoot
 import com.project.nonclassicsets.presentation.generatedialog.ui.GenerateDialogRoot
 import com.project.nonclassicsets.presentation.workingset.ui.WorkingSetRoot
@@ -21,6 +22,7 @@ private val navConfiguration = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(NavKey::class) {
             subclass(ScreenTypes.WorkingSet::class, ScreenTypes.WorkingSet.serializer())
+            subclass(ScreenTypes.Calculator::class, ScreenTypes.Calculator.serializer())
             subclass(ScreenTypes.ClusteringResult::class, ScreenTypes.ClusteringResult.serializer())
             subclass(ScreenTypes.GenerateQuantities::class, ScreenTypes.GenerateQuantities.serializer())
             subclass(ScreenTypes.AddQuantity::class, ScreenTypes.AddQuantity.serializer())
@@ -36,8 +38,12 @@ fun AppNavigation() {
             WorkingSetRoot(
                 navigateToGenerate = { navBackStack.add(ScreenTypes.GenerateQuantities) },
                 navigateToAdd = { navBackStack.add(ScreenTypes.AddQuantity) },
-                navigateToResult = { navBackStack.add(ScreenTypes.ClusteringResult) }
+                navigateToResult = { navBackStack.add(ScreenTypes.ClusteringResult) },
+                navigateToCalculator = { navBackStack.add(ScreenTypes.Calculator) }
             )
+        }
+        entry<ScreenTypes.Calculator> {
+            CalculatorRoot(onClose = { navBackStack.removeLastOrNull() })
         }
         entry<ScreenTypes.ClusteringResult> {
             ClusteringResultRoot(onClose = { navBackStack.removeLastOrNull() })

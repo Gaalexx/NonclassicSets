@@ -1,5 +1,6 @@
 package com.project.nonclassicsets.domain.repository
 
+import com.project.nonclassicsets.domain.model.AlphaCut
 import com.project.nonclassicsets.domain.model.ClusteringOutcome
 import com.project.nonclassicsets.domain.model.FuzzyQuantity
 import com.project.nonclassicsets.domain.model.FuzzyQuantityDraft
@@ -12,4 +13,9 @@ interface FuzzyMathRepository {
     suspend fun membershipCurve(quantity: FuzzyQuantity, xMin: Double, xMax: Double, pointsCount: Int): List<Double>
     suspend fun cluster(rows: List<QuantityWithCut>, alpha: Double, stopMode: StopMode): Result<ClusteringOutcome>
     suspend fun generate(settings: GenerationSettings): Result<List<FuzzyQuantityDraft>>
+    suspend fun add(first: FuzzyQuantity, second: FuzzyQuantity): Result<List<AlphaCut>>
+    suspend fun subtract(first: FuzzyQuantity, second: FuzzyQuantity): Result<List<AlphaCut>>
+    suspend fun multiply(first: FuzzyQuantity, second: FuzzyQuantity): Result<List<AlphaCut>>
+    suspend fun divide(first: FuzzyQuantity, second: FuzzyQuantity): Result<List<AlphaCut>>
 }
+

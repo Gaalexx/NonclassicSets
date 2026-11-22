@@ -34,6 +34,7 @@ import com.project.nonclassicsets.presentation.workingset.viewmodel.WorkingSetVi
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import nonclassicsets.shared.generated.resources.Res
 import nonclassicsets.shared.generated.resources.add_button
+import nonclassicsets.shared.generated.resources.calculator
 import nonclassicsets.shared.generated.resources.generate_button
 import nonclassicsets.shared.generated.resources.import_button
 import nonclassicsets.shared.generated.resources.import_empty_file
@@ -50,7 +51,8 @@ fun WorkingSetRoot(
     navigateToGenerate: () -> Unit = {},
     navigateToAdd: () -> Unit = {},
     navigateToResult: () -> Unit = {},
-    viewModel: WorkingSetViewModel = metroViewModel()
+    viewModel: WorkingSetViewModel = metroViewModel(),
+    navigateToCalculator: () -> Unit = {},
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle().value
     val onEvent = viewModel::onEvent
@@ -67,7 +69,8 @@ fun WorkingSetRoot(
         state = state,
         onEvent = onEvent,
         navigateToGenerate = navigateToGenerate,
-        navigateToAdd = navigateToAdd
+        navigateToAdd = navigateToAdd,
+        navigateToCalculator = navigateToCalculator
     )
 }
 
@@ -77,6 +80,7 @@ fun WorkingSet(
     onEvent: (WorkingSetViewModelCommand) -> Unit = {},
     navigateToGenerate: () -> Unit = {},
     navigateToAdd: () -> Unit = {},
+    navigateToCalculator: () -> Unit = {},
 ) {
     val isEmpty = state.quantities.isEmpty()
 
@@ -103,6 +107,11 @@ fun WorkingSet(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.weight(1f))
+                SecondaryButton(
+                    text = stringResource(Res.string.calculator),
+                    enabled = !state.isImporting,
+                    onClick = navigateToCalculator
+                )
                 SecondaryButton(
                     text = stringResource(Res.string.import_button),
                     enabled = !state.isImporting,

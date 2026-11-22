@@ -9,6 +9,9 @@ sealed class ScreenTypes : NavKey {
     data object WorkingSet : ScreenTypes()
 
     @Serializable
+    data object Calculator : ScreenTypes()
+
+    @Serializable
     data object ClusteringResult : ScreenTypes()
 
     @Serializable

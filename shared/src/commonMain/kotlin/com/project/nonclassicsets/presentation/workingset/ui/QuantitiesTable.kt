@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -33,12 +34,13 @@ import com.project.nonclassicsets.domain.model.FuzzyQuantity
 import com.project.nonclassicsets.domain.model.QuantityWithCut
 import com.project.nonclassicsets.presentation.shared.CountBadge
 import com.project.nonclassicsets.presentation.shared.FuzzyCard
+import com.project.nonclassicsets.presentation.shared.SecondaryButton
+import com.project.nonclassicsets.presentation.shared.displayName
 import com.project.nonclassicsets.presentation.shared.format
 import com.project.nonclassicsets.presentation.shared.formatLevel
 import com.project.nonclassicsets.presentation.shared.formatParameter
 import com.project.nonclassicsets.presentation.workingset.state.WorkingSetViewModelState
 import com.project.nonclassicsets.presentation.workingset.viewmodel.WorkingSetViewModelCommand
-import com.project.nonclassicsets.presentation.shared.displayName
 import nonclassicsets.shared.generated.resources.Res
 import nonclassicsets.shared.generated.resources.column_cut
 import nonclassicsets.shared.generated.resources.column_cut_unknown
@@ -48,6 +50,7 @@ import nonclassicsets.shared.generated.resources.column_k2
 import nonclassicsets.shared.generated.resources.column_name
 import nonclassicsets.shared.generated.resources.current_set
 import nonclassicsets.shared.generated.resources.cut_not_computed
+import nonclassicsets.shared.generated.resources.delete_quanities
 import nonclassicsets.shared.generated.resources.quantities
 import nonclassicsets.shared.generated.resources.row_delete
 import nonclassicsets.shared.generated.resources.row_menu
@@ -77,7 +80,17 @@ fun QuantitiesTableCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             CountBadge(
-                text = pluralStringResource(Res.plurals.quantities, state.quantities.size, state.quantities.size)
+                text = pluralStringResource(
+                    Res.plurals.quantities,
+                    state.quantities.size,
+                    state.quantities.size
+                )
+            )
+            Spacer(Modifier.weight(1f))
+            SecondaryButton(
+                text = stringResource(Res.string.delete_quanities),
+                enabled = state.quantities.isNotEmpty(),
+                onClick = { onEvent(WorkingSetViewModelCommand.ClearQuantities) }
             )
         }
 
