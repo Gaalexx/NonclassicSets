@@ -4,11 +4,13 @@ import com.gaalex.mathcore.clusterization.AgglomerativeClusterer
 import com.gaalex.mathcore.clusterization.ClusterMode
 import com.gaalex.mathcore.clusterization.EndpointIntervalDistance
 import com.gaalex.mathcore.clusterization.IntervalClusterer
+import com.gaalex.mathcore.fuzzy.AlphaLevel
 import com.gaalex.mathcore.fuzzy.AlphaLevelFuzzyValue
 import com.gaalex.mathcore.fuzzy.FisherFuzzyValue
 import com.gaalex.mathcore.fuzzy.FisherParameters
 import com.gaalex.mathcore.fuzzy.FuzzyValue
 import com.gaalex.mathcore.fuzzy.operations.FuzzyArithmetic
+import com.gaalex.mathcore.fuzzy.uniformAlphas
 import com.gaalex.mathcore.generation.FisherDatasetGenerator
 import com.gaalex.mathcore.generation.FisherFuzzyDatasetGenerator
 import com.gaalex.mathcore.generation.GenerationConfig
@@ -153,12 +155,11 @@ class FuzzyMathRepositoryImpl : FuzzyMathRepository {
         first: FuzzyQuantity,
         second: FuzzyQuantity,
         func: suspend (FuzzyValue, FuzzyValue) -> AlphaLevelFuzzyValue
-    ): Result<List<AlphaCut>>{
-        try{
+    ): Result<List<AlphaCut>> {
+        try {
             val res = mathFunction(first, second, func)
             return Result.success(res)
-        }
-        catch (e: Exception){
+        } catch (e: Exception) {
             return Result.failure(e)
         }
     }
@@ -189,6 +190,30 @@ class FuzzyMathRepositoryImpl : FuzzyMathRepository {
         second: FuzzyQuantity
     ): Result<List<AlphaCut>> {
         return tryMathFunction(first, second, FuzzyArithmetic()::divide)
+    }
+
+    override suspend fun membershipAlpha(alphas: List<AlphaCut>, member: Double): Result<Double> {
+        val alphaValues: List<AlphaLevel> = buildList {
+            val listOfAlphas = uniformAlphas(120)
+            alphas.forEachIndexed { index, it ->
+                add(
+                    AlphaLevel(
+                        alpha = listOfAlphas[index],
+                        cut = Interval(left = it.left, right = it.right)
+                    )
+                )
+            }
+        }
+        val alphaQuantity = AlphaLevelFuzzyValue(alphaValues)
+
+        val res = try{
+            val resultOfOperation = alphaQuantity.membership(member)
+            Result.success(resultOfOperation)
+        }
+        catch(e: Exception){
+            Result.failure(e)
+        }
+        return res
     }
 
     private fun AlphaCut.toInterval(): Interval = Interval(left, right)

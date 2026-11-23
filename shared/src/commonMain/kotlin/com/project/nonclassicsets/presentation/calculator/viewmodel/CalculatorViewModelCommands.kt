@@ -10,4 +10,6 @@ interface CalculatorViewModelCommands {
         val secondK2: Double? = null,
         val operation: FuzzyOperations = FuzzyOperations.Idle
     ) : CalculatorViewModelCommands
+
+    data class ChangeMembershipInput(val input: String) : CalculatorViewModelCommands
 }

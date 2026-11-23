@@ -31,9 +31,31 @@ class CalculatorViewModel(
     val state = _state.asStateFlow()
 
     fun onEvent(event: CalculatorViewModelCommands) {
-        if (event is CalculatorViewModelCommands.ChangeParameters) onChangeParameters(event)
+        when (event) {
+            is CalculatorViewModelCommands.ChangeParameters -> onChangeParameters(event)
+            is CalculatorViewModelCommands.ChangeMembershipInput -> onChangeMembershipInput(event)
+        }
     }
 
+    private fun onChangeMembershipInput(event: CalculatorViewModelCommands.ChangeMembershipInput) {
+        viewModelScope.launch {
+            val value = event.input.toDoubleOrNull()
+            if (value == null || value <= 0) {
+                // TODO случай исключения
+            } else {
+                val res = mathUseCase.membership(_state.value.resultCurve, value)
+                res.onSuccess {
+                    _state.update {
+                        it.copy(
+                            membershipValueInput = event.input,
+                            membershipValue = res.getOrNull()!!.toString()
+                        )
+                    }
+                }
+
+            }
+        }
+    }
 
     private fun onChangeParameters(event: CalculatorViewModelCommands.ChangeParameters) {
         viewModelScope.launch {

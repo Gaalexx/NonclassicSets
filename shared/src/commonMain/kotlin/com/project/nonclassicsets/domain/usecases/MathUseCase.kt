@@ -30,4 +30,22 @@ class MathUseCase(
             }
         }
     }
+
+    suspend fun membership(
+        curve: List<Double>,
+        member: Double
+    ): Result<Double> {
+        return withContext(Dispatchers.Default) {
+            mathRepo.membershipAlpha(
+                buildList<AlphaCut> {
+                    var leftPtr = 0
+                    var rightPtr = curve.lastIndex
+                    while (leftPtr <= rightPtr) {
+                        add(AlphaCut(left = curve[leftPtr++], right = curve[rightPtr--]))
+                    }
+                },
+                member = member
+            )
+        }
+    }
 }

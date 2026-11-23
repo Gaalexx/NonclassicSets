@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.project.nonclassicsets.presentation.calculator.state.CalculatorViewModelState
 import com.project.nonclassicsets.presentation.calculator.ui.FuzzyOperations.RealOperation
 import com.project.nonclassicsets.presentation.calculator.viewmodel.CalculatorViewModel
+import com.project.nonclassicsets.presentation.calculator.viewmodel.CalculatorViewModelCommands
 import com.project.nonclassicsets.presentation.calculator.viewmodel.CalculatorViewModelCommands.ChangeParameters
 import com.project.nonclassicsets.presentation.shared.FuzzyCard
 import com.project.nonclassicsets.presentation.shared.FuzzyTextField
@@ -66,7 +68,7 @@ fun CalculatorRoot(
 @Composable
 fun CalculatorScreen(
     state: CalculatorViewModelState = CalculatorViewModelState(),
-    onChangeParameters: (ChangeParameters) -> Unit = {},
+    onChangeParameters: (CalculatorViewModelCommands) -> Unit = {},
     onClose: () -> Unit = {},
 ) {
     var firstK1 by rememberSaveable { mutableStateOf("") }
@@ -74,6 +76,7 @@ fun CalculatorScreen(
     var secondK1 by rememberSaveable { mutableStateOf("") }
     var secondK2 by rememberSaveable { mutableStateOf("") }
     var operationIndex by rememberSaveable { mutableIntStateOf(0) }
+    var membershipInput by rememberSaveable { mutableStateOf("") }
 
     val parameters = ChangeParameters(
         firstK1 = firstK1.toDoubleInput(),
@@ -137,14 +140,45 @@ fun CalculatorScreen(
             state.secondQuantity != null && state.secondQuantity.k1 == parameters.secondK1 && state.secondQuantity.k2 == parameters.secondK2
         ) {
             FuzzyCard(modifier = Modifier.fillMaxWidth()) {
-                MembershipChart(
-                    modifier = Modifier.fillMaxWidth(),
-                    curves = listOf(ChartCurve(state.resultCurve, MaterialTheme.colorScheme.primary)),
-                    scale = scale,
-                    alpha = null,
-                    alphaLabel = ""
-                )
+
+                Row {
+                    MembershipChart(
+                        modifier = Modifier.weight(1f).fillMaxWidth(1f),
+                        curves = listOf(
+                            ChartCurve(
+                                state.resultCurve,
+                                MaterialTheme.colorScheme.primary
+                            )
+                        ),
+                        scale = scale,
+                        alpha = null,
+                        alphaLabel = ""
+                    )
+                    Column(
+                        modifier = Modifier.weight(1f).fillMaxWidth()
+                    ) {
+                        FuzzyTextField(
+                            value = membershipInput,
+                            onValueChange = { it ->
+                                onChangeParameters(
+                                    CalculatorViewModelCommands.ChangeMembershipInput(
+                                        it
+                                    )
+                                )
+                                membershipInput = it
+                            },
+                            label = "Введите член множества",
+                            error = if (false) { // TODO изменить!
+                                stringResource(Res.string.error_k2)
+                            } else null
+                        )
+                        Text(text = state.membershipValue)
+                    }
+                    Spacer(Modifier.weight(1f))
+                }
+
             }
+
         }
     }
 }

@@ -9,13 +9,30 @@ import com.project.nonclassicsets.domain.model.QuantityWithCut
 import com.project.nonclassicsets.domain.model.StopMode
 
 interface FuzzyMathRepository {
-    suspend fun alphaCuts(quantities: List<FuzzyQuantity>, alpha: Double): Result<List<QuantityWithCut>>
-    suspend fun membershipCurve(quantity: FuzzyQuantity, xMin: Double, xMax: Double, pointsCount: Int): List<Double>
-    suspend fun cluster(rows: List<QuantityWithCut>, alpha: Double, stopMode: StopMode): Result<ClusteringOutcome>
+    suspend fun alphaCuts(
+        quantities: List<FuzzyQuantity>,
+        alpha: Double
+    ): Result<List<QuantityWithCut>>
+
+    suspend fun membershipCurve(
+        quantity: FuzzyQuantity,
+        xMin: Double,
+        xMax: Double,
+        pointsCount: Int
+    ): List<Double>
+
+    suspend fun cluster(
+        rows: List<QuantityWithCut>,
+        alpha: Double,
+        stopMode: StopMode
+    ): Result<ClusteringOutcome>
+
     suspend fun generate(settings: GenerationSettings): Result<List<FuzzyQuantityDraft>>
     suspend fun add(first: FuzzyQuantity, second: FuzzyQuantity): Result<List<AlphaCut>>
     suspend fun subtract(first: FuzzyQuantity, second: FuzzyQuantity): Result<List<AlphaCut>>
     suspend fun multiply(first: FuzzyQuantity, second: FuzzyQuantity): Result<List<AlphaCut>>
     suspend fun divide(first: FuzzyQuantity, second: FuzzyQuantity): Result<List<AlphaCut>>
+
+    suspend fun membershipAlpha(alphas: List<AlphaCut>, member: Double): Result<Double>
 }
 
