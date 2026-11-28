@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -43,6 +44,7 @@ import nonclassicsets.shared.generated.resources.calculator
 import nonclassicsets.shared.generated.resources.close
 import nonclassicsets.shared.generated.resources.error_k1
 import nonclassicsets.shared.generated.resources.error_k2
+import nonclassicsets.shared.generated.resources.input_value
 import nonclassicsets.shared.generated.resources.k1
 import nonclassicsets.shared.generated.resources.k2
 import org.jetbrains.compose.resources.stringResource
@@ -74,6 +76,7 @@ fun CalculatorScreen(
     var secondK1 by rememberSaveable { mutableStateOf("") }
     var secondK2 by rememberSaveable { mutableStateOf("") }
     var operationIndex by rememberSaveable { mutableIntStateOf(0) }
+    var membershipInput by rememberSaveable { mutableStateOf("") }
 
     val parameters = ChangeParameters(
         firstK1 = firstK1.toDoubleInput(),
@@ -132,19 +135,44 @@ fun CalculatorScreen(
         }
 
         val scale = state.resultScale
-        if (scale != null && state.resultCurve.isNotEmpty() && state.operation == parameters.operation &&
+        val result = state.result
+        if (result != null && scale != null && state.resultCurve.isNotEmpty() && state.operation == parameters.operation &&
             state.firstQuantity != null && state.firstQuantity.k1 == parameters.firstK1 && state.firstQuantity.k2 == parameters.firstK2 &&
             state.secondQuantity != null && state.secondQuantity.k1 == parameters.secondK1 && state.secondQuantity.k2 == parameters.secondK2
         ) {
             FuzzyCard(modifier = Modifier.fillMaxWidth()) {
-                MembershipChart(
-                    modifier = Modifier.fillMaxWidth(),
-                    curves = listOf(ChartCurve(state.resultCurve, MaterialTheme.colorScheme.primary)),
-                    scale = scale,
-                    alpha = null,
-                    alphaLabel = ""
-                )
+
+                Row {
+                    MembershipChart(
+                        modifier = Modifier.weight(1f),
+                        curves = listOf(
+                            ChartCurve(
+                                state.resultCurve,
+                                MaterialTheme.colorScheme.primary
+                            )
+                        ),
+                        scale = scale,
+                        alpha = null,
+                        alphaLabel = ""
+                    )
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        FuzzyTextField(
+                            value = membershipInput,
+                            onValueChange = { membershipInput = it },
+                            label = stringResource(Res.string.input_value)
+                        )
+                        val membership = membershipInput.toDoubleInput()?.let(result::membership)
+                        Text(
+                            text = membership?.toString().orEmpty()
+                        )
+                    }
+                }
+
             }
+
         }
     }
 }

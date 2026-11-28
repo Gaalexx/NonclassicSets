@@ -1,6 +1,6 @@
 package com.project.nonclassicsets.domain.usecases
 
-import com.project.nonclassicsets.domain.model.AlphaCut
+import com.gaalex.mathcore.fuzzy.AlphaLevelFuzzyValue
 import com.project.nonclassicsets.domain.model.FuzzyQuantity
 import com.project.nonclassicsets.domain.repository.FuzzyMathRepository
 import com.project.nonclassicsets.presentation.calculator.ui.FuzzyOperations
@@ -20,7 +20,7 @@ class MathUseCase(
         first: FuzzyQuantity,
         second: FuzzyQuantity,
         operation: FuzzyOperations.RealOperation
-    ): Result<List<AlphaCut>> {
+    ): Result<AlphaLevelFuzzyValue> {
         return withContext(Dispatchers.Default) {
             when (operation) {
                 FuzzyOperations.RealOperation.Divide -> mathRepo.divide(first, second)
@@ -30,4 +30,5 @@ class MathUseCase(
             }
         }
     }
+
 }

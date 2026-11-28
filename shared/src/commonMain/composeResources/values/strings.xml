@@ -11,6 +11,7 @@
     <string name="add_button">+ Добавить</string>
     <string name="delete_quanities">Удалить</string>
     <string name="calculator">Калькулятор</string>
+    <string name="input_value">Введите член множества</string>
 
     <string name="current_set">Текущий набор</string>
     <string name="column_id">ID</string>

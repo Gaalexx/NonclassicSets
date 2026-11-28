@@ -134,60 +134,47 @@ class FuzzyMathRepositoryImpl : FuzzyMathRepository {
             }
         }
 
-    private suspend fun mathFunction(
-        first: FuzzyQuantity,
-        second: FuzzyQuantity,
-        func: suspend (FuzzyValue, FuzzyValue) -> AlphaLevelFuzzyValue
-    ): List<AlphaCut> {
-        val firstValue = FisherFuzzyValue(parameters = FisherParameters(first.k1, first.k2))
-        val secondValue = FisherFuzzyValue(parameters = FisherParameters(second.k1, second.k2))
-        val resValue = func(firstValue, secondValue)
-        return buildList {
-            resValue.levels.forEach {
-                add(AlphaCut(it.cut.left, it.cut.right))
-            }
-        }
-    }
-
     private suspend fun tryMathFunction(
         first: FuzzyQuantity,
         second: FuzzyQuantity,
         func: suspend (FuzzyValue, FuzzyValue) -> AlphaLevelFuzzyValue
-    ): Result<List<AlphaCut>>{
-        try{
-            val res = mathFunction(first, second, func)
-            return Result.success(res)
-        }
-        catch (e: Exception){
-            return Result.failure(e)
+    ): Result<AlphaLevelFuzzyValue> {
+        return try {
+            val firstValue = FisherFuzzyValue(FisherParameters(first.k1, first.k2))
+            val secondValue = FisherFuzzyValue(FisherParameters(second.k1, second.k2))
+            Result.success(func(firstValue, secondValue))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
     override suspend fun add(
         first: FuzzyQuantity,
         second: FuzzyQuantity
-    ): Result<List<AlphaCut>> {
+    ): Result<AlphaLevelFuzzyValue> {
         return tryMathFunction(first, second, FuzzyArithmetic()::add)
     }
 
     override suspend fun subtract(
         first: FuzzyQuantity,
         second: FuzzyQuantity
-    ): Result<List<AlphaCut>> {
+    ): Result<AlphaLevelFuzzyValue> {
         return tryMathFunction(first, second, FuzzyArithmetic()::subtract)
     }
 
     override suspend fun multiply(
         first: FuzzyQuantity,
         second: FuzzyQuantity
-    ): Result<List<AlphaCut>> {
+    ): Result<AlphaLevelFuzzyValue> {
         return tryMathFunction(first, second, FuzzyArithmetic()::multiply)
     }
 
     override suspend fun divide(
         first: FuzzyQuantity,
         second: FuzzyQuantity
-    ): Result<List<AlphaCut>> {
+    ): Result<AlphaLevelFuzzyValue> {
         return tryMathFunction(first, second, FuzzyArithmetic()::divide)
     }
 
