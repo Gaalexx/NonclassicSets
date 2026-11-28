@@ -2,10 +2,6 @@ package com.project.nonclassicsets.presentation.calculator.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gaalex.mathcore.fuzzy.AlphaLevel
-import com.gaalex.mathcore.fuzzy.AlphaLevelFuzzyValue
-import com.gaalex.mathcore.fuzzy.uniformAlphas
-import com.gaalex.mathcore.interval.Interval
 import com.project.nonclassicsets.domain.model.FuzzyQuantity
 import com.project.nonclassicsets.domain.usecases.MathUseCase
 import com.project.nonclassicsets.presentation.calculator.state.CalculatorViewModelState
@@ -30,34 +26,7 @@ class CalculatorViewModel(
     private val _state = MutableStateFlow(CalculatorViewModelState())
     val state = _state.asStateFlow()
 
-    fun onEvent(event: CalculatorViewModelCommands) {
-        when (event) {
-            is CalculatorViewModelCommands.ChangeParameters -> onChangeParameters(event)
-            is CalculatorViewModelCommands.ChangeMembershipInput -> onChangeMembershipInput(event)
-        }
-    }
-
-    private fun onChangeMembershipInput(event: CalculatorViewModelCommands.ChangeMembershipInput) {
-        viewModelScope.launch {
-            val value = event.input.toDoubleOrNull()
-            if (value == null || value <= 0) {
-                // TODO случай исключения
-            } else {
-                val res = mathUseCase.membership(_state.value.resultCurve, value)
-                res.onSuccess {
-                    _state.update {
-                        it.copy(
-                            membershipValueInput = event.input,
-                            membershipValue = res.getOrNull()!!.toString()
-                        )
-                    }
-                }
-
-            }
-        }
-    }
-
-    private fun onChangeParameters(event: CalculatorViewModelCommands.ChangeParameters) {
+    fun onEvent(event: CalculatorViewModelCommands.ChangeParameters) {
         viewModelScope.launch {
             _state.update {
                 it.copy(
@@ -77,6 +46,7 @@ class CalculatorViewModel(
                     )
                     else null,
                     operation = event.operation,
+                    result = null,
                     resultCurve = emptyList(),
                     resultScale = null
                 )
@@ -89,15 +59,11 @@ class CalculatorViewModel(
                     _state.value.operation as FuzzyOperations.RealOperation
                 )
 
-                res.onSuccess { cuts ->
-                    val bounds = cuts.firstOrNull() ?: return@onSuccess
+                res.onSuccess { result ->
+                    val bounds = result.levels.first().cut
                     val scale = chartScaleBetween(bounds.left, bounds.right)
                     if (scale.span <= 0.0 || !scale.span.isFinite()) return@onSuccess
 
-                    val levels = uniformAlphas(cuts.size).zip(cuts) { alpha, (left, right) ->
-                        AlphaLevel(alpha, Interval(left, right))
-                    }
-                    val result = AlphaLevelFuzzyValue(levels)
                     val curve = List(CURVE_POINTS) { index ->
                         result.membership(scale.xAt(index, CURVE_POINTS))
                     }
@@ -107,7 +73,7 @@ class CalculatorViewModel(
                             state.firstQuantity?.k1 == event.firstK1 && state.firstQuantity?.k2 == event.firstK2 &&
                             state.secondQuantity?.k1 == event.secondK1 && state.secondQuantity?.k2 == event.secondK2
                         ) {
-                            state.copy(resultCurve = curve, resultScale = scale)
+                            state.copy(result = result, resultCurve = curve, resultScale = scale)
                         } else state
                     }
                 }

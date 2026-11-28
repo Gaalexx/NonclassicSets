@@ -1,6 +1,6 @@
 package com.project.nonclassicsets.domain.repository
 
-import com.project.nonclassicsets.domain.model.AlphaCut
+import com.gaalex.mathcore.fuzzy.AlphaLevelFuzzyValue
 import com.project.nonclassicsets.domain.model.ClusteringOutcome
 import com.project.nonclassicsets.domain.model.FuzzyQuantity
 import com.project.nonclassicsets.domain.model.FuzzyQuantityDraft
@@ -28,11 +28,9 @@ interface FuzzyMathRepository {
     ): Result<ClusteringOutcome>
 
     suspend fun generate(settings: GenerationSettings): Result<List<FuzzyQuantityDraft>>
-    suspend fun add(first: FuzzyQuantity, second: FuzzyQuantity): Result<List<AlphaCut>>
-    suspend fun subtract(first: FuzzyQuantity, second: FuzzyQuantity): Result<List<AlphaCut>>
-    suspend fun multiply(first: FuzzyQuantity, second: FuzzyQuantity): Result<List<AlphaCut>>
-    suspend fun divide(first: FuzzyQuantity, second: FuzzyQuantity): Result<List<AlphaCut>>
-
-    suspend fun membershipAlpha(alphas: List<AlphaCut>, member: Double): Result<Double>
+    suspend fun add(first: FuzzyQuantity, second: FuzzyQuantity): Result<AlphaLevelFuzzyValue>
+    suspend fun subtract(first: FuzzyQuantity, second: FuzzyQuantity): Result<AlphaLevelFuzzyValue>
+    suspend fun multiply(first: FuzzyQuantity, second: FuzzyQuantity): Result<AlphaLevelFuzzyValue>
+    suspend fun divide(first: FuzzyQuantity, second: FuzzyQuantity): Result<AlphaLevelFuzzyValue>
 }
 

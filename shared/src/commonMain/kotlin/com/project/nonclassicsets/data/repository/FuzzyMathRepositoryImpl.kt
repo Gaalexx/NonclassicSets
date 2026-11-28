@@ -4,13 +4,11 @@ import com.gaalex.mathcore.clusterization.AgglomerativeClusterer
 import com.gaalex.mathcore.clusterization.ClusterMode
 import com.gaalex.mathcore.clusterization.EndpointIntervalDistance
 import com.gaalex.mathcore.clusterization.IntervalClusterer
-import com.gaalex.mathcore.fuzzy.AlphaLevel
 import com.gaalex.mathcore.fuzzy.AlphaLevelFuzzyValue
 import com.gaalex.mathcore.fuzzy.FisherFuzzyValue
 import com.gaalex.mathcore.fuzzy.FisherParameters
 import com.gaalex.mathcore.fuzzy.FuzzyValue
 import com.gaalex.mathcore.fuzzy.operations.FuzzyArithmetic
-import com.gaalex.mathcore.fuzzy.uniformAlphas
 import com.gaalex.mathcore.generation.FisherDatasetGenerator
 import com.gaalex.mathcore.generation.FisherFuzzyDatasetGenerator
 import com.gaalex.mathcore.generation.GenerationConfig
@@ -136,84 +134,48 @@ class FuzzyMathRepositoryImpl : FuzzyMathRepository {
             }
         }
 
-    private suspend fun mathFunction(
-        first: FuzzyQuantity,
-        second: FuzzyQuantity,
-        func: suspend (FuzzyValue, FuzzyValue) -> AlphaLevelFuzzyValue
-    ): List<AlphaCut> {
-        val firstValue = FisherFuzzyValue(parameters = FisherParameters(first.k1, first.k2))
-        val secondValue = FisherFuzzyValue(parameters = FisherParameters(second.k1, second.k2))
-        val resValue = func(firstValue, secondValue)
-        return buildList {
-            resValue.levels.forEach {
-                add(AlphaCut(it.cut.left, it.cut.right))
-            }
-        }
-    }
-
     private suspend fun tryMathFunction(
         first: FuzzyQuantity,
         second: FuzzyQuantity,
         func: suspend (FuzzyValue, FuzzyValue) -> AlphaLevelFuzzyValue
-    ): Result<List<AlphaCut>> {
-        try {
-            val res = mathFunction(first, second, func)
-            return Result.success(res)
+    ): Result<AlphaLevelFuzzyValue> {
+        return try {
+            val firstValue = FisherFuzzyValue(FisherParameters(first.k1, first.k2))
+            val secondValue = FisherFuzzyValue(FisherParameters(second.k1, second.k2))
+            Result.success(func(firstValue, secondValue))
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            return Result.failure(e)
+            Result.failure(e)
         }
     }
 
     override suspend fun add(
         first: FuzzyQuantity,
         second: FuzzyQuantity
-    ): Result<List<AlphaCut>> {
+    ): Result<AlphaLevelFuzzyValue> {
         return tryMathFunction(first, second, FuzzyArithmetic()::add)
     }
 
     override suspend fun subtract(
         first: FuzzyQuantity,
         second: FuzzyQuantity
-    ): Result<List<AlphaCut>> {
+    ): Result<AlphaLevelFuzzyValue> {
         return tryMathFunction(first, second, FuzzyArithmetic()::subtract)
     }
 
     override suspend fun multiply(
         first: FuzzyQuantity,
         second: FuzzyQuantity
-    ): Result<List<AlphaCut>> {
+    ): Result<AlphaLevelFuzzyValue> {
         return tryMathFunction(first, second, FuzzyArithmetic()::multiply)
     }
 
     override suspend fun divide(
         first: FuzzyQuantity,
         second: FuzzyQuantity
-    ): Result<List<AlphaCut>> {
+    ): Result<AlphaLevelFuzzyValue> {
         return tryMathFunction(first, second, FuzzyArithmetic()::divide)
-    }
-
-    override suspend fun membershipAlpha(alphas: List<AlphaCut>, member: Double): Result<Double> {
-        val alphaValues: List<AlphaLevel> = buildList {
-            val listOfAlphas = uniformAlphas(120)
-            alphas.forEachIndexed { index, it ->
-                add(
-                    AlphaLevel(
-                        alpha = listOfAlphas[index],
-                        cut = Interval(left = it.left, right = it.right)
-                    )
-                )
-            }
-        }
-        val alphaQuantity = AlphaLevelFuzzyValue(alphaValues)
-
-        val res = try{
-            val resultOfOperation = alphaQuantity.membership(member)
-            Result.success(resultOfOperation)
-        }
-        catch(e: Exception){
-            Result.failure(e)
-        }
-        return res
     }
 
     private fun AlphaCut.toInterval(): Interval = Interval(left, right)

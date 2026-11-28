@@ -28,7 +28,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.project.nonclassicsets.presentation.calculator.state.CalculatorViewModelState
 import com.project.nonclassicsets.presentation.calculator.ui.FuzzyOperations.RealOperation
 import com.project.nonclassicsets.presentation.calculator.viewmodel.CalculatorViewModel
-import com.project.nonclassicsets.presentation.calculator.viewmodel.CalculatorViewModelCommands
 import com.project.nonclassicsets.presentation.calculator.viewmodel.CalculatorViewModelCommands.ChangeParameters
 import com.project.nonclassicsets.presentation.shared.FuzzyCard
 import com.project.nonclassicsets.presentation.shared.FuzzyTextField
@@ -45,6 +44,7 @@ import nonclassicsets.shared.generated.resources.calculator
 import nonclassicsets.shared.generated.resources.close
 import nonclassicsets.shared.generated.resources.error_k1
 import nonclassicsets.shared.generated.resources.error_k2
+import nonclassicsets.shared.generated.resources.input_value
 import nonclassicsets.shared.generated.resources.k1
 import nonclassicsets.shared.generated.resources.k2
 import org.jetbrains.compose.resources.stringResource
@@ -68,7 +68,7 @@ fun CalculatorRoot(
 @Composable
 fun CalculatorScreen(
     state: CalculatorViewModelState = CalculatorViewModelState(),
-    onChangeParameters: (CalculatorViewModelCommands) -> Unit = {},
+    onChangeParameters: (ChangeParameters) -> Unit = {},
     onClose: () -> Unit = {},
 ) {
     var firstK1 by rememberSaveable { mutableStateOf("") }
@@ -135,7 +135,8 @@ fun CalculatorScreen(
         }
 
         val scale = state.resultScale
-        if (scale != null && state.resultCurve.isNotEmpty() && state.operation == parameters.operation &&
+        val result = state.result
+        if (result != null && scale != null && state.resultCurve.isNotEmpty() && state.operation == parameters.operation &&
             state.firstQuantity != null && state.firstQuantity.k1 == parameters.firstK1 && state.firstQuantity.k2 == parameters.firstK2 &&
             state.secondQuantity != null && state.secondQuantity.k1 == parameters.secondK1 && state.secondQuantity.k2 == parameters.secondK2
         ) {
@@ -143,7 +144,7 @@ fun CalculatorScreen(
 
                 Row {
                     MembershipChart(
-                        modifier = Modifier.weight(1f).fillMaxWidth(1f),
+                        modifier = Modifier.weight(1f),
                         curves = listOf(
                             ChartCurve(
                                 state.resultCurve,
@@ -155,26 +156,19 @@ fun CalculatorScreen(
                         alphaLabel = ""
                     )
                     Column(
-                        modifier = Modifier.weight(1f).fillMaxWidth()
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         FuzzyTextField(
                             value = membershipInput,
-                            onValueChange = { it ->
-                                onChangeParameters(
-                                    CalculatorViewModelCommands.ChangeMembershipInput(
-                                        it
-                                    )
-                                )
-                                membershipInput = it
-                            },
-                            label = "Введите член множества",
-                            error = if (false) { // TODO изменить!
-                                stringResource(Res.string.error_k2)
-                            } else null
+                            onValueChange = { membershipInput = it },
+                            label = stringResource(Res.string.input_value)
                         )
-                        Text(text = state.membershipValue)
+                        val membership = membershipInput.toDoubleInput()?.let(result::membership)
+                        Text(
+                            text = membership?.toString().orEmpty()
+                        )
                     }
-                    Spacer(Modifier.weight(1f))
                 }
 
             }
